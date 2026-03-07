@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { AssetService } from '../services/asset.service';
+import { BatchService } from '../services/batch.service';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -35,6 +36,7 @@ import { AssetForm } from './asset-form/asset-form';
 })
 export class Assets implements OnInit {
   assetService = inject(AssetService);
+  batchService = inject(BatchService);
   cdr = inject(ChangeDetectorRef);
 
   assets: any[] = [];
@@ -44,6 +46,11 @@ export class Assets implements OnInit {
   drawerVisible: boolean = false;
   formDrawerVisible: boolean = false;
   editingAsset: any = null;
+
+  // Cache for asset batches
+  assetBatches: { [key: number]: any[] } = {};
+  loadingBatches: { [key: number]: boolean } = {};
+  expandedRows: { [key: string]: boolean } = {};
 
   items: MenuItem[] = [
     {
@@ -66,6 +73,32 @@ export class Assets implements OnInit {
 
   ngOnInit() {
     this.loadAssets();
+  }
+
+  onRowExpand(event: any) {
+    this.loadAssetBatches(event.data.id);
+  }
+
+  async loadAssetBatches(assetId: number) {
+    if (this.assetBatches[assetId]) {
+      return; // Already loaded
+    }
+
+    this.loadingBatches[assetId] = true;
+    // Force UI update to show loading state if used in template
+    this.cdr.detectChanges();
+
+    try {
+      this.assetBatches[assetId] = await this.batchService.getByAsset(assetId);
+      // Create a new reference for assetBatches to trigger change detection if bound directly
+      this.assetBatches = { ...this.assetBatches };
+    } catch (error) {
+      console.error('Error loading batches for asset', assetId, error);
+      this.assetBatches[assetId] = [];
+    } finally {
+      this.loadingBatches[assetId] = false;
+      this.cdr.detectChanges();
+    }
   }
 
   setMenuAsset(asset: any) {

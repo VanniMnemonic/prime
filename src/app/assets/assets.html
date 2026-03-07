@@ -1,15 +1,21 @@
 <div class="card">
   <p-table
     #dt
-    stripedRows
+    [stripedRows]="true"
+    [rowHover]="true"
     size="large"
     [value]="assets"
     [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
     [globalFilterFields]="['denomination', 'part_number', 'barcode']"
     [tableStyle]="{ 'min-width': '50rem' }"
     dataKey="id"
     [scrollable]="true"
     scrollHeight="calc(100vh - 12rem)"
+    [expandedRowKeys]="expandedRows"
+    (onRowExpand)="onRowExpand($event)"
   >
     <ng-template pTemplate="caption">
       <div class="flex items-center gap-2">
@@ -31,6 +37,7 @@
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 4rem"></th>
+        <th style="width: 4rem"></th>
         <th pSortableColumn="denomination">Denomination <p-sortIcon field="denomination" /></th>
         <th pSortableColumn="part_number">Part Number <p-sortIcon field="part_number" /></th>
         <th pSortableColumn="barcode">Barcode <p-sortIcon field="barcode" /></th>
@@ -39,8 +46,19 @@
         <th style="width: 4rem"></th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-asset>
+    <ng-template pTemplate="body" let-asset let-expanded="expanded">
       <tr>
+        <td>
+          <p-button
+            type="button"
+            pRipple
+            [pRowToggler]="asset"
+            [text]="true"
+            [rounded]="true"
+            [plain]="true"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+          />
+        </td>
         <td>
           <p-avatar [image]="asset.image_path" shape="square" size="large" icon="pi pi-box" />
         </td>
@@ -68,6 +86,60 @@
             size="small"
             appendTo="body"
           />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #expandedrow let-asset>
+      <tr>
+        <td colspan="8">
+          <div class="p-4">
+            <p-table [value]="assetBatches[asset.id]" [loading]="loadingBatches[asset.id]" size="small" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Batch</th>
+                  <th>Serial Number</th>
+                  <th>Location</th>
+                  <th>Quantity</th>
+                  <th>Exp. Date</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-batch>
+                <tr>
+                  <td class="font-bold">{{ batch.denomination }}</td>
+                  <td>{{ batch.serial_number }}</td>
+                  <td>
+                    @if (batch.location?.parent) {
+                      <span class="text-xs text-muted-color">
+                        {{ batch.location.parent.denomination }} <i class="pi pi-angle-right"></i>
+                      </span>
+                    }
+                    {{ batch.location?.denomination }}
+                  </td>
+                  <td>{{ batch.quantity }}</td>
+                  <td>
+                    @if (batch.expiration_date) {
+                      {{ batch.expiration_date | date: 'shortDate' }}
+                    } @else {
+                      -
+                    }
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5" class="text-center">
+                    @if (loadingBatches[asset.id]) {
+                      <div class="flex items-center justify-center gap-2">
+                        <i class="pi pi-spin pi-spinner"></i> Loading batches...
+                      </div>
+                    } @else {
+                      No batches found for this asset.
+                    }
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
         </td>
       </tr>
     </ng-template>
