@@ -24,6 +24,11 @@ export class Home implements OnInit {
       icon: 'pi pi-user',
     },
     {
+      route: 'locations',
+      label: 'Locations',
+      icon: 'pi pi-map-marker',
+    },
+    {
       route: 'assets',
       label: 'Assets',
       icon: 'pi pi-box',

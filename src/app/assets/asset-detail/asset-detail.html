@@ -1,0 +1,115 @@
+@if (asset()) {
+  <div class="flex flex-col gap-4">
+    <p-toast />
+    <div class="flex items-center gap-4">
+      <p-avatar
+        [image]="asset().image_path"
+        shape="square"
+        size="xlarge"
+        [style]="{ width: '7rem', height: '7rem' }"
+        styleClass="rounded-xl"
+        icon="pi pi-box"
+      />
+      <div class="flex flex-col">
+        <span class="text-xl font-bold">{{ asset().denomination }}</span>
+        <span class="text-muted-color flex items-center gap-2">
+          PN: {{ asset().part_number }}
+          <p-button
+            icon="pi pi-copy"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Copy Part Number"
+            tooltipPosition="top"
+            (onClick)="copyToClipboard(asset().part_number)"
+          />
+        </span>
+        <span class="text-muted-color flex items-center gap-2">
+          BC: {{ asset().barcode }}
+          <p-button
+            icon="pi pi-copy"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Copy Barcode"
+            tooltipPosition="top"
+            (onClick)="copyToClipboard(asset().barcode)"
+          />
+        </span>
+        <span class="text-sm">
+          Min Stock: <span class="font-bold">{{ asset().min_stock }}</span>
+        </span>
+        <span class="text-sm">
+          Total Quantity:
+          <span
+            class="font-bold"
+            [class.text-red-500]="asset().total_quantity < asset().min_stock"
+            [class.text-green-500]="asset().total_quantity >= asset().min_stock"
+          >
+            {{ asset().total_quantity }}
+          </span>
+        </span>
+      </div>
+      <p-button
+        icon="pi pi-pencil"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        class="ml-auto"
+        (onClick)="edit()"
+      />
+    </div>
+
+    <p-divider />
+    <div class="-mx-5">
+      <p-table
+        #dt
+        [value]="batches"
+        [loading]="loading"
+        size="small"
+        stripedRows
+        [globalFilterFields]="['denomination', 'serial_number', 'location.denomination']"
+        styleClass="p-datatable-sm"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="denomination">Batch <p-sortIcon field="denomination" /></th>
+            <th pSortableColumn="serial_number">S/N <p-sortIcon field="serial_number" /></th>
+            <th pSortableColumn="location.denomination">
+              Location <p-sortIcon field="location.denomination" />
+            </th>
+            <th pSortableColumn="quantity">Qty <p-sortIcon field="quantity" /></th>
+            <th pSortableColumn="expiration_date">Exp. Date <p-sortIcon field="expiration_date" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-batch>
+          <tr>
+            <td class="font-bold">{{ batch.denomination }}</td>
+            <td>{{ batch.serial_number }}</td>
+            <td>
+              @if (batch.location?.parent) {
+                <span class="text-xs text-muted-color">
+                  {{ batch.location.parent.denomination }} <i class="pi pi-angle-right"></i>
+                </span>
+              }
+              {{ batch.location?.denomination }}
+            </td>
+            <td>{{ batch.quantity }}</td>
+            <td>
+              @if (batch.expiration_date) {
+                {{ batch.expiration_date | date: 'shortDate' }}
+              } @else {
+                -
+              }
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center">No batches found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+}

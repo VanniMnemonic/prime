@@ -1,0 +1,127 @@
+@if (user()) {
+  <div class="flex flex-col gap-4">
+    <p-toast />
+    <div class="flex items-center gap-4">
+      <p-avatar
+        [image]="user().image_path"
+        shape="circle"
+        size="xlarge"
+        [style]="{ width: '7rem', height: '7rem' }"
+      />
+      <div class="flex flex-col">
+        <span class="text-muted-color">{{ user().title?.title }}</span>
+        <span class="text-xl font-bold">{{ user().first_name }} {{ user().last_name }}</span>
+        <span class="text-muted-color flex items-center gap-2">
+          {{ user().email }}
+          <p-button
+            icon="pi pi-copy"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Copy email"
+            tooltipPosition="top"
+            (onClick)="copyToClipboard(user().email)"
+          />
+        </span>
+        <span>
+          @if (user().location?.parent) {
+            <span
+              >{{ user().location.parent.denomination }} <i class="pi pi-angle-double-right"></i>
+            </span>
+          }
+          {{ user().location?.denomination }}
+        </span>
+      </div>
+      <p-button
+        icon="pi pi-pencil"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        class="ml-auto"
+        (onClick)="edit()"
+      />
+    </div>
+
+    <!-- <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col">
+
+      </div>
+    </div> -->
+    <p-divider />
+    <div class="-mx-5">
+      <p-table
+        #dt
+        [value]="withdrawals"
+        [loading]="loading"
+        size="small"
+        stripedRows
+        [globalFilterFields]="['batch.asset.denomination', 'batch.serial_number']"
+        styleClass="p-datatable-sm"
+      >
+        <!-- <ng-template pTemplate="caption">
+          <div class="flex">
+            <p-iconfield iconPosition="left" class="ml-auto">
+              <p-inputicon>
+                <i class="pi pi-search"></i>
+              </p-inputicon>
+              <input
+                pInputText
+                type="text"
+                [(ngModel)]="searchValue"
+                (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                placeholder="Search withdrawals"
+              />
+            </p-iconfield>
+          </div>
+        </ng-template> -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th></th>
+            <th pSortableColumn="date">Date <p-sortIcon field="date" /></th>
+            <th pSortableColumn="batch.asset.denomination">
+              Item <p-sortIcon field="batch.asset.denomination" />
+            </th>
+            <th pSortableColumn="quantity">Qty <p-sortIcon field="quantity" /></th>
+            <th>Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-withdrawal>
+          <tr>
+            <td>
+              <p-avatar
+                [image]="withdrawal.batch?.asset?.image_path"
+                shape="square"
+                size="large"
+                icon="pi pi-image"
+              />
+            </td>
+            <td>{{ withdrawal.date | date: 'shortDate' }}</td>
+            <td>
+              <div class="flex flex-col">
+                <span class="font-bold">{{ withdrawal.batch?.asset?.denomination }}</span>
+                <span class="text-xs text-muted-color">{{ withdrawal.batch?.serial_number }}</span>
+              </div>
+            </td>
+            <td>{{ withdrawal.quantity }}</td>
+            <td>
+              @if (withdrawal.must_return) {
+                @if (withdrawal.return_date) {
+                  <p-tag severity="success" value="Returned" />
+                } @else {
+                  <p-tag severity="warn" value="Borrowed" />
+                }
+              } @else {
+                <p-tag severity="info" value="Consumed" />
+              }
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center">No withdrawals found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+}

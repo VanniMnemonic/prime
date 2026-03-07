@@ -1,0 +1,66 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+  <div class="flex flex-col items-center gap-2">
+    <p-avatar
+      [image]="imagePath() || ''"
+      shape="square"
+      size="xlarge"
+      [style]="{ width: '100px', height: '100px' }"
+      icon="pi pi-box"
+      styleClass="rounded-xl"
+    />
+    <p-fileupload
+      mode="basic"
+      chooseLabel="Upload Image"
+      chooseIcon="pi pi-upload"
+      accept="image/*"
+      maxFileSize="1000000"
+      (onSelect)="onImageSelect($event)"
+      [auto]="true"
+      [customUpload]="true"
+    />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="denomination" class="font-bold">Denomination</label>
+    <input pInputText id="denomination" formControlName="denomination" />
+    @if (form.get('denomination')?.invalid && form.get('denomination')?.touched) {
+      <small class="text-red-500">Denomination is required.</small>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="part_number" class="font-bold">Part Number</label>
+    <input pInputText id="part_number" formControlName="part_number" />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="barcode" class="font-bold">Barcode</label>
+    <input pInputText id="barcode" formControlName="barcode" />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="min_stock" class="font-bold">Minimum Stock</label>
+    <p-inputnumber
+      id="min_stock"
+      formControlName="min_stock"
+      [min]="0"
+      [showButtons]="true"
+      buttonLayout="horizontal"
+      inputId="min_stock"
+      spinnerMode="horizontal"
+      [step]="1"
+      decrementButtonClass="p-button-secondary"
+      incrementButtonClass="p-button-secondary"
+      incrementButtonIcon="pi pi-plus"
+      decrementButtonIcon="pi pi-minus"
+    />
+    @if (form.get('min_stock')?.invalid && form.get('min_stock')?.touched) {
+      <small class="text-red-500">Minimum Stock is required and must be non-negative.</small>
+    }
+  </div>
+
+  <div class="flex justify-end gap-2 mt-4">
+    <p-button label="Cancel" severity="secondary" (onClick)="cancel()" />
+    <p-button label="Save" type="submit" [disabled]="form.invalid" />
+  </div>
+</form>

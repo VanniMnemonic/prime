@@ -5,6 +5,7 @@ import { Dashboard } from './dashboard/dashboard';
 import { Assets } from './assets/assets';
 import { Withdrawals } from './withdrawals/withdrawals';
 import { Settings } from './settings/settings';
+import { Locations } from './locations/locations';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard },
       { path: 'users', component: Users },
+      { path: 'locations', component: Locations },
       { path: 'assets', component: Assets },
       { path: 'withdrawals', component: Withdrawals },
       { path: 'settings', component: Settings },

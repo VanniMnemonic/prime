@@ -5,10 +5,13 @@ import { Injectable } from '@angular/core';
 })
 export class ElectronService {
   private ipcRenderer: any;
+  private webUtils: any;
 
   constructor() {
     if (this.isElectron()) {
-      this.ipcRenderer = (window as any).require('electron').ipcRenderer;
+      const electron = (window as any).require('electron');
+      this.ipcRenderer = electron.ipcRenderer;
+      this.webUtils = electron.webUtils;
     }
   }
 
@@ -16,17 +19,27 @@ export class ElectronService {
     return !!(window && (window as any).process && (window as any).process.type);
   }
 
-  async getUsers(): Promise<any[]> {
+  async invoke(channel: string, ...args: any[]): Promise<any> {
     if (this.isElectron()) {
-      return await this.ipcRenderer.invoke('get-users');
-    }
-    return [];
-  }
-
-  async addUser(user: any): Promise<any> {
-    if (this.isElectron()) {
-      return await this.ipcRenderer.invoke('add-user', user);
+      return await this.ipcRenderer.invoke(channel, ...args);
     }
     return null;
+  }
+
+  getFilePath(file: File): string {
+    if (this.isElectron() && this.webUtils) {
+      return this.webUtils.getPathForFile(file);
+    }
+    return (file as any).path;
+  }
+
+  // Deprecated: Use UserService instead
+  async getUsers(): Promise<any[]> {
+    return this.invoke('get-users');
+  }
+
+  // Deprecated: Use UserService instead
+  async addUser(user: any): Promise<any> {
+    return this.invoke('add-user', user);
   }
 }

@@ -1,4 +1,102 @@
-<div>
-  <h2>Assets</h2>
-  <p>Welcome to the Assets!</p>
+<div class="card">
+  <p-table
+    #dt
+    stripedRows
+    size="large"
+    [value]="assets"
+    [loading]="loading"
+    [globalFilterFields]="['denomination', 'part_number', 'barcode']"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    dataKey="id"
+    [scrollable]="true"
+    scrollHeight="calc(100vh - 12rem)"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex items-center gap-2">
+        <p-iconfield iconPosition="left" class="ml-auto">
+          <p-inputicon>
+            <i class="pi pi-search"></i>
+          </p-inputicon>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="searchValue"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Search keyword"
+          />
+        </p-iconfield>
+        <p-button label="Add Asset" icon="pi pi-plus" (onClick)="openAddAsset()" />
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 4rem"></th>
+        <th pSortableColumn="denomination">Denomination <p-sortIcon field="denomination" /></th>
+        <th pSortableColumn="part_number">Part Number <p-sortIcon field="part_number" /></th>
+        <th pSortableColumn="barcode">Barcode <p-sortIcon field="barcode" /></th>
+        <th pSortableColumn="min_stock">Min Stock <p-sortIcon field="min_stock" /></th>
+        <th pSortableColumn="total_quantity">Quantity <p-sortIcon field="total_quantity" /></th>
+        <th style="width: 4rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-asset>
+      <tr>
+        <td>
+          <p-avatar [image]="asset.image_path" shape="square" size="large" icon="pi pi-box" />
+        </td>
+        <td class="font-bold">{{ asset.denomination }}</td>
+        <td>{{ asset.part_number }}</td>
+        <td>{{ asset.barcode }}</td>
+        <td>{{ asset.min_stock }}</td>
+        <td>
+          <span
+            class="font-bold"
+            [class.text-red-500]="asset.total_quantity < asset.min_stock"
+            [class.text-green-500]="asset.total_quantity >= asset.min_stock"
+          >
+            {{ asset.total_quantity }}
+          </span>
+        </td>
+        <td class="relative">
+          <p-splitButton
+            label="Detail"
+            icon="pi pi-eye"
+            (onClick)="openDetail(asset)"
+            [model]="items"
+            (onDropdownClick)="setMenuAsset(asset)"
+            severity="secondary"
+            size="small"
+            appendTo="body"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>
+
+<p-drawer
+  [(visible)]="drawerVisible"
+  [header]="selectedAsset?.denomination || 'Asset Detail'"
+  position="right"
+  [style]="{ width: '40rem' }"
+>
+  <app-asset-detail [asset]="selectedAsset" (onEdit)="openEditAsset($event)" />
+</p-drawer>
+
+<p-drawer
+  [(visible)]="formDrawerVisible"
+  [header]="editingAsset ? 'Edit Asset' : 'Add Asset'"
+  position="right"
+  [style]="{ width: '40rem' }"
+  [modal]="true"
+  [dismissible]="true"
+>
+  <ng-template pTemplate="content">
+    <app-asset-form
+      *ngIf="formDrawerVisible"
+      [asset]="editingAsset"
+      (onSave)="onFormSave()"
+      (onCancel)="onFormCancel()"
+    />
+  </ng-template>
+</p-drawer>

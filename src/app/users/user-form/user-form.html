@@ -1,0 +1,105 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+  <div class="flex flex-col items-center gap-2">
+    <p-avatar
+      [image]="imagePath() || ''"
+      shape="circle"
+      size="xlarge"
+      [style]="{ width: '100px', height: '100px' }"
+      icon="pi pi-user"
+    />
+    <p-fileupload
+      mode="basic"
+      chooseLabel="Upload Image"
+      chooseIcon="pi pi-upload"
+      accept="image/*"
+      maxFileSize="1000000"
+      (onSelect)="onImageSelect($event)"
+      [auto]="true"
+      [customUpload]="true"
+    />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="title" class="font-bold">Title</label>
+    <div class="flex gap-2">
+      <p-select
+        id="title"
+        formControlName="title"
+        [options]="titles"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select a Title"
+        [style]="{ width: '100%' }"
+        class="flex-1"
+      />
+      <p-button icon="pi pi-plus" (onClick)="openTitleDialog()" />
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="first_name" class="font-bold">First Name</label>
+    <input pInputText id="first_name" formControlName="first_name" />
+    @if (form.get('first_name')?.invalid && form.get('first_name')?.touched) {
+      <small class="text-red-500">First Name is required.</small>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="last_name" class="font-bold">Last Name</label>
+    <input pInputText id="last_name" formControlName="last_name" />
+    @if (form.get('last_name')?.invalid && form.get('last_name')?.touched) {
+      <small class="text-red-500">Last Name is required.</small>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="email" class="font-bold">Email</label>
+    <input pInputText id="email" formControlName="email" type="email" />
+    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+      <small class="text-red-500">Valid Email is required.</small>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="barcode" class="font-bold">Barcode</label>
+    <input pInputText id="barcode" formControlName="barcode" />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="location" class="font-bold">Location</label>
+    <p-treeSelect
+      id="location"
+      formControlName="location"
+      [options]="locations"
+      placeholder="Select a Location"
+      [filter]="true"
+      filterBy="label"
+      [style]="{ width: '100%' }"
+      containerStyleClass="w-full"
+      selectionMode="single"
+    />
+  </div>
+
+  <div class="flex justify-end gap-2 mt-4">
+    <p-button label="Cancel" severity="secondary" (onClick)="cancel()" />
+    <p-button label="Save" type="submit" [disabled]="form.invalid" />
+  </div>
+</form>
+
+<p-dialog
+  header="Add New Title"
+  [(visible)]="titleDialogVisible"
+  [modal]="true"
+  [style]="{ width: '25rem' }"
+>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <label for="newTitle" class="font-bold">Title</label>
+      <input pInputText id="newTitle" [(ngModel)]="newTitle" />
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" (onClick)="titleDialogVisible = false" />
+      <p-button label="Save" (onClick)="saveTitle()" [disabled]="!newTitle" />
+    </div>
+  </div>
+</p-dialog>
