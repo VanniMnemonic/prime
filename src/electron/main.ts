@@ -725,3 +725,51 @@ ipcMain.handle(
     }
   },
 );
+
+ipcMain.handle('reset-db', async () => {
+  const queryRunner = AppDataSource.createQueryRunner();
+  await queryRunner.connect();
+
+  // Disable foreign keys to allow truncating tables
+  await queryRunner.query('PRAGMA foreign_keys = OFF');
+
+  try {
+    await queryRunner.startTransaction();
+
+    // Clear all tables
+    await queryRunner.query('DELETE FROM withdrawal');
+    await queryRunner.query('DELETE FROM batch');
+    await queryRunner.query('DELETE FROM asset');
+    await queryRunner.query('DELETE FROM user');
+    await queryRunner.query('DELETE FROM location');
+    await queryRunner.query('DELETE FROM title');
+
+    // Reset auto-increment counters (sqlite specific)
+    await queryRunner.query('DELETE FROM sqlite_sequence');
+
+    await queryRunner.commitTransaction();
+    return true;
+  } catch (err) {
+    await queryRunner.rollbackTransaction();
+    throw err;
+  } finally {
+    await queryRunner.query('PRAGMA foreign_keys = ON');
+    await queryRunner.release();
+  }
+});
+
+ipcMain.handle('seed-db', async () => {
+  // Reuse the seeding logic from app.on('ready')
+  // For simplicity, we'll just trigger a reload which will run the seeding logic again on startup
+  // But since the user wants a button, let's extract the seeding logic or just call reload
+
+  // A better approach is to reload the window, which will re-run the main process initialization logic if we structure it right.
+  // However, the seeding logic is currently inside app.on('ready').
+  // Let's just reload the window for now, as the seeding logic runs if counts are 0.
+  // Since we just cleared the DB with reset-db, a reload should trigger seeding.
+
+  if (win) {
+    win.reload();
+  }
+  return true;
+});

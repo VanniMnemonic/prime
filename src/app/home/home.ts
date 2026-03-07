@@ -45,5 +45,20 @@ export class Home implements OnInit {
     },
   ];
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        const url = event.urlAfterRedirects.split('/')[1];
+        if (this.tabs.some((t) => t.route === url)) {
+          this.activeTab = url;
+        }
+      }
+    });
+    
+    // Set initial tab
+    const url = this.router.url.split('/')[1];
+    if (this.tabs.some((t) => t.route === url)) {
+      this.activeTab = url;
+    }
+  }
 }

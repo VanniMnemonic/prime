@@ -14,6 +14,7 @@ import { MessageService } from 'primeng/api';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DatePickerModule } from 'primeng/datepicker';
 import { CheckboxModule } from 'primeng/checkbox';
+import { SliderModule } from 'primeng/slider';
 
 @Component({
   selector: 'app-withdrawal-form',
@@ -29,6 +30,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     InputNumberModule,
     DatePickerModule,
     CheckboxModule,
+    SliderModule,
   ],
   templateUrl: './withdrawal-form.html',
   styleUrl: './withdrawal-form.css',
