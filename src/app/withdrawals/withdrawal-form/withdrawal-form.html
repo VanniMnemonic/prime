@@ -17,7 +17,7 @@
                                     pInputText 
                                     id="userBarcode" 
                                     [(ngModel)]="userBarcode" 
-                                    (keydown.enter)="searchUser()"
+                                    (keydown.enter)="searchUser(); activateCallback(2)"
                                     placeholder="Scan user barcode..." 
                                     autofocus
                                     class="w-full"
@@ -63,7 +63,7 @@
                                     pInputText 
                                     id="assetBarcode" 
                                     [(ngModel)]="assetBarcode" 
-                                    (keydown.enter)="searchAsset()"
+                                    (keydown.enter)="searchAsset(); activateCallback(3)"
                                     placeholder="Scan asset or batch barcode..." 
                                     class="w-full"
                                 />
