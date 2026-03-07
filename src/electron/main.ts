@@ -613,3 +613,51 @@ ipcMain.handle('get-batches-by-asset', async (event, assetId: number) => {
     relations: ['location', 'location.parent'],
   });
 });
+
+ipcMain.handle('add-withdrawal', async (event, withdrawalData: any) => {
+  const queryRunner = AppDataSource.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
+
+  try {
+    const { batch, quantity, user, date, must_return, expected_return_date } = withdrawalData;
+
+    // Fetch fresh batch data using queryRunner manager
+    const existingBatch = await queryRunner.manager.findOne(Batch, { where: { id: batch.id } });
+
+    if (!existingBatch) {
+      throw new Error('Batch not found');
+    }
+
+    if (existingBatch.quantity < quantity) {
+      throw new Error('Insufficient quantity');
+    }
+
+    // Decrement quantity
+    existingBatch.quantity -= quantity;
+    await queryRunner.manager.save(existingBatch);
+
+    // Create withdrawal
+    const withdrawal = new Withdrawal();
+    withdrawal.user = user;
+    withdrawal.batch = existingBatch;
+    withdrawal.quantity = quantity;
+    withdrawal.date = new Date(date);
+    withdrawal.must_return = must_return;
+    withdrawal.expected_return_date = expected_return_date
+      ? new Date(expected_return_date)
+      : undefined;
+    withdrawal.return_date = undefined; // Not returned yet
+    withdrawal.inefficient_quantity = 0; // Default
+
+    const savedWithdrawal = await queryRunner.manager.save(withdrawal);
+
+    await queryRunner.commitTransaction();
+    return savedWithdrawal;
+  } catch (err) {
+    await queryRunner.rollbackTransaction();
+    throw err;
+  } finally {
+    await queryRunner.release();
+  }
+});

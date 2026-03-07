@@ -14,4 +14,8 @@ export class WithdrawalService {
   async getAll(): Promise<any[]> {
     return await this.electronService.invoke('get-withdrawals');
   }
+
+  async create(withdrawal: any): Promise<any> {
+    return await this.electronService.invoke('add-withdrawal', withdrawal);
+  }
 }

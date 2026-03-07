@@ -38,6 +38,9 @@ export class Withdrawal {
   must_return!: boolean;
 
   @Column({ nullable: true })
+  expected_return_date?: Date;
+
+  @Column({ nullable: true })
   return_date?: Date;
 
   @Column({ type: 'int', default: 0 })

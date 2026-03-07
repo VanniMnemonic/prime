@@ -55,7 +55,7 @@ export class WithdrawalForm {
   quantity = 1;
   date = new Date();
   mustReturn = false;
-  returnDate: Date | null = null;
+  expectedReturnDate: Date | null = null;
 
   async searchUser() {
     if (!this.userBarcode) return;
@@ -150,7 +150,7 @@ export class WithdrawalForm {
       quantity: this.quantity,
       date: this.date,
       must_return: this.mustReturn,
-      return_date: this.returnDate,
+      expected_return_date: this.expectedReturnDate,
     };
 
     this.onSave.emit(withdrawalData);

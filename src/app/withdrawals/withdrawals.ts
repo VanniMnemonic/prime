@@ -57,12 +57,18 @@ export class Withdrawals implements OnInit {
     this.formDrawerVisible = true;
   }
 
-  onFormSave(withdrawalData: any) {
-    console.log('Saving withdrawal:', withdrawalData);
-    // TODO: Implement save logic via WithdrawalService
-    // await this.withdrawalService.create(withdrawalData);
-    this.formDrawerVisible = false;
-    this.loadWithdrawals();
+  async onFormSave(withdrawalData: any) {
+    try {
+      this.loading = true;
+      await this.withdrawalService.create(withdrawalData);
+      this.formDrawerVisible = false;
+      await this.loadWithdrawals();
+    } catch (error) {
+      console.error('Error saving withdrawal:', error);
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   onFormCancel() {
