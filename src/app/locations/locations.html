@@ -27,11 +27,20 @@
       </div>
     </ng-template>
   </p-organizationChart>
+
+  <p-speedDial 
+    [model]="items" 
+    direction="up" 
+    [style]="{ 'position': 'fixed', 'bottom': '2rem', 'right': '2rem' }" 
+    showIcon="pi pi-bars" 
+    hideIcon="pi pi-times" 
+    buttonClassName="p-button-outlined" 
+  />
 </div>
 
 <p-drawer
   [(visible)]="drawerVisible"
-  [header]="'Add Sub-Location to ' + (selectedLocation?.denomination || 'Root')"
+  [header]="selectedLocation ? ('Add Sub-Location to ' + selectedLocation.denomination) : 'Add Root Location'"
   position="right"
   [style]="{ width: '30rem' }"
 >

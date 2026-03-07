@@ -14,6 +14,7 @@ import { MenuItem } from 'primeng/api';
 import { DrawerModule } from 'primeng/drawer';
 import { AssetDetail } from './asset-detail/asset-detail';
 import { AssetForm } from './asset-form/asset-form';
+import { AssetBatchForm } from './asset-batch-form/asset-batch-form';
 import { LocationDisplay } from '../shared/components/location-display';
 import { TagModule } from 'primeng/tag';
 
@@ -32,6 +33,7 @@ import { TagModule } from 'primeng/tag';
     DrawerModule,
     AssetDetail,
     AssetForm,
+    AssetBatchForm,
     LocationDisplay,
     TagModule,
   ],
@@ -49,6 +51,7 @@ export class Assets implements OnInit {
   selectedAsset: any;
   drawerVisible: boolean = false;
   formDrawerVisible: boolean = false;
+  batchFormDrawerVisible: boolean = false;
   editingAsset: any = null;
 
   // Cache for asset batches
@@ -57,6 +60,13 @@ export class Assets implements OnInit {
   expandedRows: { [key: string]: boolean } = {};
 
   items: MenuItem[] = [
+    {
+      label: 'View Details',
+      icon: 'pi pi-eye',
+      command: () => {
+        this.openDetail(this.selectedAsset);
+      },
+    },
     {
       label: 'Edit',
       icon: 'pi pi-pencil',
@@ -154,8 +164,18 @@ export class Assets implements OnInit {
     this.formDrawerVisible = true;
   }
 
+  openAddBatch(asset: any) {
+    this.selectedAsset = asset;
+    this.batchFormDrawerVisible = true;
+  }
+
   onFormSave() {
     this.formDrawerVisible = false;
+    this.loadAssets();
+  }
+
+  onBatchFormSave() {
+    this.batchFormDrawerVisible = false;
     this.loadAssets();
   }
 

@@ -614,6 +614,12 @@ ipcMain.handle('get-batches-by-asset', async (event, assetId: number) => {
   });
 });
 
+ipcMain.handle('add-batch', async (event, batchData: any) => {
+  const batchRepository = AppDataSource.getRepository(Batch);
+  const batch = batchRepository.create(batchData);
+  return await batchRepository.save(batch);
+});
+
 ipcMain.handle('add-withdrawal', async (event, withdrawalData: any) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();

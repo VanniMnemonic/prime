@@ -100,13 +100,13 @@
         </td>
         <td class="relative">
           <p-splitButton
-            label="Detail"
-            icon="pi pi-eye"
-            (onClick)="openDetail(asset)"
+            label="Batch"
+            icon="pi pi-plus"
+            (onClick)="openAddBatch(asset)"
             [model]="items"
             (onDropdownClick)="setMenuAsset(asset)"
             outlined
-            severity="primary"
+            severity="secondary"
             size="small"
             appendTo="body"
           />
@@ -207,6 +207,25 @@
   <ng-template pTemplate="content">
     @if (formDrawerVisible) {
       <app-asset-form [asset]="editingAsset" (onSave)="onFormSave()" (onCancel)="onFormCancel()" />
+    }
+  </ng-template>
+</p-drawer>
+
+<p-drawer
+  [(visible)]="batchFormDrawerVisible"
+  [header]="'Add Batch for ' + (selectedAsset?.denomination || 'Asset')"
+  position="right"
+  [style]="{ width: '40rem' }"
+  [modal]="true"
+  [dismissible]="true"
+>
+  <ng-template pTemplate="content">
+    @if (batchFormDrawerVisible) {
+      <app-asset-batch-form
+        [asset]="selectedAsset"
+        (onSave)="onBatchFormSave()"
+        (onCancel)="batchFormDrawerVisible = false"
+      />
     }
   </ng-template>
 </p-drawer>

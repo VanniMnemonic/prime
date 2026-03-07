@@ -10,4 +10,8 @@ export class BatchService {
   async getByAsset(assetId: number): Promise<any[]> {
     return await this.electronService.invoke('get-batches-by-asset', assetId);
   }
+
+  async create(batchData: any): Promise<any> {
+    return await this.electronService.invoke('add-batch', batchData);
+  }
 }

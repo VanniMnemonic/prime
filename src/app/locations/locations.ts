@@ -1,15 +1,16 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { OrganizationChartModule } from 'primeng/organizationchart';
-import { TreeNode } from 'primeng/api';
+import { TreeNode, MenuItem } from 'primeng/api';
 import { LocationService } from '../services/location.service';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { LocationForm } from './location-form/location-form';
 import { CommonModule } from '@angular/common';
+import { SpeedDialModule } from 'primeng/speeddial';
 
 @Component({
   selector: 'app-locations',
-  imports: [OrganizationChartModule, ButtonModule, DrawerModule, LocationForm, CommonModule],
+  imports: [OrganizationChartModule, ButtonModule, DrawerModule, LocationForm, CommonModule, SpeedDialModule],
   templateUrl: './locations.html',
   styleUrl: './locations.css',
 })
@@ -21,6 +22,18 @@ export class Locations implements OnInit {
   loading: boolean = true;
   drawerVisible: boolean = false;
   selectedLocation: any = null;
+
+  items: MenuItem[] = [
+    {
+      icon: 'pi pi-plus',
+      tooltipOptions: {
+        tooltipLabel: 'Add Root Location'
+      },
+      command: () => {
+        this.addRootLocation();
+      }
+    }
+  ];
 
   ngOnInit() {
     this.loadLocations();
@@ -72,6 +85,11 @@ export class Locations implements OnInit {
 
   addSubLocation(location: any) {
     this.selectedLocation = location;
+    this.drawerVisible = true;
+  }
+
+  addRootLocation() {
+    this.selectedLocation = null;
     this.drawerVisible = true;
   }
 
