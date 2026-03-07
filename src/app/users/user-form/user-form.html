@@ -1,11 +1,11 @@
 <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
   <div class="flex flex-col items-center gap-2">
     <p-avatar
-      [image]="imagePath() || ''"
+      [image]="imagePath()"
       shape="circle"
       size="xlarge"
       [style]="{ width: '100px', height: '100px' }"
-      icon="pi pi-user"
+      [icon]="imagePath() ? '' : 'pi pi-user'"
     />
     <p-fileupload
       mode="basic"

@@ -94,7 +94,7 @@
               </div>
             }
 
-            @if (!selectedBatch) {
+            @if (!selectedBatch && !selectedAsset) {
               <div class="flex flex-col gap-2">
                 <label for="assetBarcode">Asset/Batch Barcode</label>
                 <p-iconfield iconPosition="left">
@@ -117,23 +117,39 @@
                 class="flex flex-col gap-2 p-4 border rounded-xl border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950"
               >
                 <div class="flex items-center gap-4">
-                  <p-avatar
-                    [image]="selectedBatch.asset?.image_path"
-                    shape="square"
-                    size="xlarge"
-                    icon="pi pi-box"
-                  />
+                  @if (selectedBatch) {
+                    <p-avatar
+                      [image]="selectedBatch.asset?.image_path"
+                      shape="square"
+                      size="xlarge"
+                      icon="pi pi-box"
+                    />
+                  } @else {
+                    <p-avatar
+                      [image]="selectedAsset?.image_path"
+                      shape="square"
+                      size="xlarge"
+                      icon="pi pi-box"
+                    />
+                  }
+
                   <div class="flex flex-col">
-                    <span class="text-xl font-bold">{{ selectedBatch.asset?.denomination }}</span>
-                    <span class="text-muted-color">{{ selectedBatch.denomination }}</span>
-                    <span class="text-sm">S/N: {{ selectedBatch.serial_number }}</span>
+                    @if (selectedBatch) {
+                      <span class="text-xl font-bold">{{ selectedBatch.asset?.denomination }}</span>
+                      <span class="text-muted-color">{{ selectedBatch.denomination }}</span>
+                      <span class="text-sm">S/N: {{ selectedBatch.serial_number }}</span>
+                    } @else {
+                      <span class="text-xl font-bold">{{ selectedAsset?.denomination }}</span>
+                      <span class="text-muted-color">Auto-Select Batches</span>
+                      <span class="text-sm">PN: {{ selectedAsset?.part_number }}</span>
+                    }
                   </div>
                   <div class="ml-auto flex gap-2">
                     <p-button
                       icon="pi pi-times"
                       severity="secondary"
                       [text]="true"
-                      (onClick)="selectedBatch = null; assetBarcode = ''"
+                      (onClick)="selectedBatch = null; selectedAsset = null; assetBarcode = ''"
                       pTooltip="Change Asset"
                     />
                     <i class="pi pi-check-circle text-green-500 text-2xl"></i>
@@ -141,14 +157,24 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4 mt-2">
                   <div class="flex flex-col">
-                    <span class="text-sm text-muted-color">Current Location</span>
-                    <span class="font-medium">{{
-                      selectedBatch.location?.denomination || 'Unknown'
-                    }}</span>
+                    <span class="text-sm text-muted-color">Location</span>
+                    <span class="font-medium">
+                      @if (selectedBatch) {
+                        {{ selectedBatch.location?.denomination || 'Unknown' }}
+                      } @else {
+                        Multiple Locations
+                      }
+                    </span>
                   </div>
                   <div class="flex flex-col">
                     <span class="text-sm text-muted-color">Available Quantity</span>
-                    <span class="font-medium">{{ selectedBatch.quantity }}</span>
+                    <span class="font-medium">
+                      @if (selectedBatch) {
+                        {{ selectedBatch.quantity }}
+                      } @else {
+                        {{ selectedAsset?.totalAvailable }}
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -166,7 +192,7 @@
               icon="pi pi-arrow-right"
               iconPos="right"
               (onClick)="activateCallback(3)"
-              [disabled]="!selectedBatch"
+              [disabled]="!selectedBatch && !selectedAsset"
             />
           </div>
         </ng-template>
@@ -200,17 +226,19 @@
                   </div>
                 </div>
               }
-              @if (selectedBatch) {
+              @if (selectedBatch || selectedAsset) {
                 <div
                   class="flex items-center gap-3 p-3 border rounded-lg border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950 opacity-75"
                 >
                   <p-avatar
-                    [image]="selectedBatch.asset?.image_path"
+                    [image]="selectedBatch?.asset?.image_path || selectedAsset?.image_path"
                     shape="square"
                     icon="pi pi-box"
                   />
                   <div class="flex flex-col overflow-hidden">
-                    <span class="font-bold truncate">{{ selectedBatch.asset?.denomination }}</span>
+                    <span class="font-bold truncate">{{
+                      selectedBatch?.asset?.denomination || selectedAsset?.denomination
+                    }}</span>
                     <span class="text-xs text-muted-color">Asset</span>
                   </div>
                   <div class="ml-auto">
@@ -233,7 +261,7 @@
                   <p-slider
                     [(ngModel)]="quantity"
                     [min]="1"
-                    [max]="selectedBatch?.quantity || 1"
+                    [max]="selectedBatch?.quantity || selectedAsset?.totalAvailable || 1"
                     class="w-full"
                   />
                 </div>
@@ -242,7 +270,7 @@
                 <p-inputNumber
                   [(ngModel)]="quantity"
                   [min]="1"
-                  [max]="selectedBatch?.quantity || 1"
+                  [max]="selectedBatch?.quantity || selectedAsset?.totalAvailable || 1"
                   [showButtons]="true"
                   buttonLayout="horizontal"
                   spinnerMode="horizontal"
@@ -254,7 +282,10 @@
                   class="w-[8rem]"
                 />
               </div>
-              <small class="text-muted-color">Available: {{ selectedBatch?.quantity || 0 }}</small>
+              <small class="text-muted-color"
+                >Available:
+                {{ selectedBatch?.quantity || selectedAsset?.totalAvailable || 0 }}</small
+              >
             </div>
 
             <div class="flex flex-col gap-2">

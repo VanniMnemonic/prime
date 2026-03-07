@@ -175,15 +175,19 @@ export class UserForm {
   }
 
   async onImageSelect(event: any) {
-    const file = event.files[0];
+    const file = event.currentFiles?.[0] ?? event.files?.[0];
+    if (!file) return;
 
-    // Use UserService (which uses ElectronService) to get the file path safely
+    // Immediate preview from blob URL
+    const previewUrl = file.objectURL
+      ?? this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
+    this.imagePath.set(previewUrl);
+
+    // Persist via Electron upload
     const filePath = this.userService.getFilePath(file);
-
     if (filePath) {
       try {
         const uploadedPath = await this.userService.uploadImage(filePath);
-        console.log('Uploaded image path:', uploadedPath);
         this.imagePath.set(this.sanitizer.bypassSecurityTrustUrl(uploadedPath));
         this.form.patchValue({ image_path: uploadedPath });
         this.messageService.add({
@@ -199,13 +203,6 @@ export class UserForm {
           detail: 'Failed to upload image',
         });
       }
-    } else {
-      console.error('File path not found on selected file object', file);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Could not retrieve file path. Please ensure you are running in Electron app.',
-      });
     }
   }
 

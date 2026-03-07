@@ -634,40 +634,84 @@ ipcMain.handle('add-withdrawal', async (event, withdrawalData: any) => {
   await queryRunner.startTransaction();
 
   try {
-    const { batch, quantity, user, date, must_return, expected_return_date } = withdrawalData;
+    const { asset, batch, quantity, user, date, must_return, expected_return_date } =
+      withdrawalData;
 
-    // Fetch fresh batch data using queryRunner manager
-    const existingBatch = await queryRunner.manager.findOne(Batch, { where: { id: batch.id } });
+    let remainingQuantity = quantity;
+    const withdrawals = [];
 
-    if (!existingBatch) {
-      throw new Error('Batch not found');
+    // Strategy:
+    // 1. If 'batch' is provided, try to fulfill from that batch first (specific serial number scan).
+    // 2. If 'asset' is provided (and 'batch' might be null or insufficient), fulfill from multiple batches of that asset.
+    //    Prioritize batches by expiration_date (nearest first).
+    //    Filter out expired batches? The prompt says "if below not expired total", implying we should check expiration.
+    //    Actually, "drop first from the ones with nearest expiration_date".
+
+    const batchesToUse: Batch[] = [];
+
+    if (batch) {
+      // Specific batch requested
+      const existingBatch = await queryRunner.manager.findOne(Batch, { where: { id: batch.id } });
+      if (!existingBatch) throw new Error('Batch not found');
+      batchesToUse.push(existingBatch);
+    } else if (asset) {
+      // Asset requested, find best batches
+      const availableBatches = await queryRunner.manager.find(Batch, {
+        where: { asset: { id: asset.id } },
+        order: { expiration_date: 'ASC' }, // Nearest expiration first
+      });
+
+      // Filter out batches with 0 quantity
+      // Also potentially filter out expired batches if required, but usually we want to use them up or flag them.
+      // Prompt says: "if below not expired total". This implies we should only count non-expired stock?
+      // Or maybe it means "withdraw as long as we have non-expired stock".
+      // Let's filter out strictly expired batches for now to be safe, or just use what's available.
+      // Usually, you can't withdraw expired goods for use.
+      const now = new Date();
+      const validBatches = availableBatches.filter(
+        (b) => b.quantity > 0 && (!b.expiration_date || new Date(b.expiration_date) >= now),
+      );
+
+      batchesToUse.push(...validBatches);
+    } else {
+      throw new Error('Neither Asset nor Batch provided');
     }
 
-    if (existingBatch.quantity < quantity) {
-      throw new Error('Insufficient quantity');
+    for (const currentBatch of batchesToUse) {
+      if (remainingQuantity <= 0) break;
+
+      const take = Math.min(currentBatch.quantity, remainingQuantity);
+
+      if (take > 0) {
+        currentBatch.quantity -= take;
+        await queryRunner.manager.save(currentBatch);
+
+        const withdrawal = new Withdrawal();
+        withdrawal.user = user;
+        withdrawal.batch = currentBatch;
+        withdrawal.quantity = take;
+        withdrawal.date = new Date(date);
+        withdrawal.must_return = must_return;
+        withdrawal.expected_return_date = expected_return_date
+          ? new Date(expected_return_date)
+          : undefined;
+        withdrawal.return_date = undefined;
+        withdrawal.inefficient_quantity = 0;
+
+        const savedWithdrawal = await queryRunner.manager.save(withdrawal);
+        withdrawals.push(savedWithdrawal);
+
+        remainingQuantity -= take;
+      }
     }
 
-    // Decrement quantity
-    existingBatch.quantity -= quantity;
-    await queryRunner.manager.save(existingBatch);
-
-    // Create withdrawal
-    const withdrawal = new Withdrawal();
-    withdrawal.user = user;
-    withdrawal.batch = existingBatch;
-    withdrawal.quantity = quantity;
-    withdrawal.date = new Date(date);
-    withdrawal.must_return = must_return;
-    withdrawal.expected_return_date = expected_return_date
-      ? new Date(expected_return_date)
-      : undefined;
-    withdrawal.return_date = undefined; // Not returned yet
-    withdrawal.inefficient_quantity = 0; // Default
-
-    const savedWithdrawal = await queryRunner.manager.save(withdrawal);
+    if (remainingQuantity > 0) {
+      // If we couldn't fulfill the total request
+      throw new Error(`Insufficient quantity. Could not fulfill ${remainingQuantity} of request.`);
+    }
 
     await queryRunner.commitTransaction();
-    return savedWithdrawal;
+    return withdrawals;
   } catch (err) {
     await queryRunner.rollbackTransaction();
     throw err;

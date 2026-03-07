@@ -118,6 +118,8 @@ export class WithdrawalForm implements AfterViewInit {
     }
   }
 
+  selectedAsset: any = null;
+
   async searchAsset() {
     if (!this.assetBarcode) return;
 
@@ -129,55 +131,45 @@ export class WithdrawalForm implements AfterViewInit {
       );
 
       if (asset) {
-        // If asset found, we need to select a batch.
-        // For simplicity, let's pick the first available batch or show a dialog.
-        // The prompt implies we should select a batch.
-        // Let's fetch batches for this asset.
-        const batches = await this.batchService.getByAsset(asset.id);
-        const availableBatch = batches.find((b: any) => b.quantity > 0);
+        // Asset found - allow withdrawal from multiple batches
+        this.selectedAsset = asset;
+        this.selectedBatch = null; // Clear specific batch if asset is selected
 
-        if (availableBatch) {
-          this.selectedBatch = { ...availableBatch, asset };
+        // Calculate total available quantity from non-expired batches
+        const batches = await this.batchService.getByAsset(asset.id);
+        const now = new Date();
+        const validBatches = batches.filter(
+          (b: any) => b.quantity > 0 && (!b.expiration_date || new Date(b.expiration_date) >= now),
+        );
+        const totalQuantity = validBatches.reduce((sum: number, b: any) => sum + b.quantity, 0);
+
+        if (totalQuantity > 0) {
+          // Store total available for validation/max
+          this.selectedAsset.totalAvailable = totalQuantity;
           this.quantity = 1;
+
           this.messageService.add({
             severity: 'success',
             summary: 'Asset Found',
-            detail: `${asset.denomination} (Batch: ${availableBatch.serial_number})`,
+            detail: `${asset.denomination} (Total Available: ${totalQuantity})`,
           });
           return;
         } else {
           this.messageService.add({
             severity: 'warn',
             summary: 'Out of Stock',
-            detail: 'Asset found but no stock available',
+            detail: 'Asset found but no valid stock available (checked expiration)',
           });
           return;
         }
       }
 
       // 2. Check if it matches a batch serial number
-      // We need to search across all batches or fetch all batches?
-      // Or maybe implement a search method in batch service.
-      // For now, let's assume we can fetch all batches (inefficient but works for small app) or search by serial.
-      // Let's iterate over assets and their batches? No, that's too slow.
-      // Let's try to search via batch service directly if we had a method.
-      // Assuming we don't have a global search, we might need to rely on what we have.
-      // However, we can fetch all batches if needed or add a search endpoint.
-      // Let's add a search endpoint or just fetch all assets and their batches.
-
-      // Since we don't have a direct search endpoint, let's try to match against fetched assets' batches?
-      // No, batches are fetched by asset ID.
-      // Let's try to find a batch by serial number via a new service method or just assume the user scans an asset barcode.
-      // But the user asked if it finds serial_number.
-
-      // Let's implement searching by serial number.
-      // We will need to fetch all batches or search on the server side.
-      // Since this is electron with sqlite, we can add an IPC handler for searching batch by serial.
-
       const batch = await this.batchService.getBySerial(this.assetBarcode);
       if (batch) {
         if (batch.quantity > 0) {
           this.selectedBatch = batch;
+          this.selectedAsset = null; // Specific batch selected
           this.quantity = 1;
           this.messageService.add({
             severity: 'success',
@@ -211,11 +203,12 @@ export class WithdrawalForm implements AfterViewInit {
   }
 
   submit() {
-    if (!this.selectedUser || !this.selectedBatch) return;
+    if (!this.selectedUser || (!this.selectedBatch && !this.selectedAsset)) return;
 
     const withdrawalData = {
       user: this.selectedUser,
-      batch: this.selectedBatch,
+      asset: this.selectedAsset, // Can be null if batch is selected
+      batch: this.selectedBatch, // Can be null if asset is selected
       quantity: this.quantity,
       date: this.date,
       must_return: this.mustReturn,

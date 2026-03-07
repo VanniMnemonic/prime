@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, input, output, effect, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -35,20 +35,6 @@ export class AssetForm {
   onCancel = output<void>();
 
   imagePath = signal<any>(null);
-  
-  // Create a computed signal or effect to handle the image path update?
-  // No, the signal set() should trigger update.
-  // The issue might be that PrimeNG Avatar doesn't support SafeUrl object directly in [image] input
-  // if it expects a string. But DomSanitizer.bypassSecurityTrustUrl returns a SafeUrlImpl object.
-  // Angular handles SafeUrl in standard bindings like [src], but PrimeNG components might treat it differently.
-  // However, UserForm works with the same logic.
-  
-  // Let's verify what happens if we force string conversion or use a different approach.
-  // Wait, local-resource:// protocol is custom. Maybe we need to ensure the sanitizer trusts it properly.
-  // The log shows: local-resource:///...
-  
-  // Let's inject ChangeDetectorRef just in case
-  cdr = inject(ChangeDetectorRef);
 
   form = this.fb.group({
     id: [null],
@@ -78,40 +64,33 @@ export class AssetForm {
   }
 
   async onImageSelect(event: any) {
-    const file = event.files[0];
-    if (file) {
-      // Use AssetService (which uses ElectronService) to get the file path safely
-      const filePath = this.assetService.getFilePath(file);
+    const file = event.currentFiles?.[0] ?? event.files?.[0];
+    if (!file) return;
 
-      if (filePath) {
-        try {
-          const uploadedPath = await this.assetService.uploadImage(filePath);
-          console.log('Uploaded image path:', uploadedPath);
-          
-          // Force change detection or signal update
-          // When bypassing security, we get a SafeUrl object
-          const safeUrl = this.sanitizer.bypassSecurityTrustUrl(uploadedPath);
-          this.imagePath.set(safeUrl);
-          this.form.patchValue({ image_path: uploadedPath });
-          
-          // Trigger change detection manually
-          this.cdr.detectChanges();
-          
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Image uploaded successfully',
-          });
-        } catch (error) {
-          console.error('Image upload failed:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to upload image',
-          });
-        }
-      } else {
-        console.warn('Could not get file path from selected file');
+    // Immediate preview from blob URL
+    const previewUrl = file.objectURL
+      ?? this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
+    this.imagePath.set(previewUrl);
+
+    // Persist via Electron upload
+    const filePath = this.assetService.getFilePath(file);
+    if (filePath) {
+      try {
+        const uploadedPath = await this.assetService.uploadImage(filePath);
+        this.imagePath.set(this.sanitizer.bypassSecurityTrustUrl(uploadedPath));
+        this.form.patchValue({ image_path: uploadedPath });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Image uploaded successfully',
+        });
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to upload image',
+        });
       }
     }
   }
