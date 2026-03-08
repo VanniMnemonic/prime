@@ -15,6 +15,10 @@ export class BatchService {
     return await this.electronService.invoke('add-batch', batchData);
   }
 
+  async update(batchData: any): Promise<any> {
+    return await this.electronService.invoke('update-batch', batchData);
+  }
+
   async getBySerial(serialNumber: string): Promise<any> {
     return await this.electronService.invoke('get-batch-by-serial', serialNumber);
   }

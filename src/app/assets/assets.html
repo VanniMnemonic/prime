@@ -37,21 +37,28 @@
       <tr>
         <th style="width: 4rem"></th>
         <th style="width: 4rem"></th>
-        <th pSortableColumn="denomination">Denomination <p-sortIcon field="denomination" /></th>
-        <th pSortableColumn="part_number">Part Number <p-sortIcon field="part_number" /></th>
-        <th pSortableColumn="barcode">Barcode <p-sortIcon field="barcode" /></th>
-        <th pSortableColumn="min_stock">Min Stock <p-sortIcon field="min_stock" /></th>
-        <th pSortableColumn="total_quantity">Quantity <p-sortIcon field="total_quantity" /></th>
-        <th pSortableColumn="is_below_min_stock">
-          <i class="pi pi-angle-double-down font-bold"></i>
+        <th pSortableColumn="denomination">
+          Denomination &nbsp;<p-sortIcon field="denomination" />
+        </th>
+        <th pSortableColumn="part_number">Part Number &nbsp;<p-sortIcon field="part_number" /></th>
+        <th pSortableColumn="barcode">Barcode &nbsp;<p-sortIcon field="barcode" /></th>
+        <th pSortableColumn="min_stock">Min Stock &nbsp;<p-sortIcon field="min_stock" /></th>
+        <th pSortableColumn="withdrawn_quantity" class="text-right">
+          Withdrawn &nbsp;<p-sortIcon field="withdrawn_quantity" />
+        </th>
+        <th pSortableColumn="total_quantity" class="text-right">
+          Quantity &nbsp;<p-sortIcon field="total_quantity" />
+        </th>
+        <th pSortableColumn="is_below_min_stock" class="text-center">
+          <i class="pi pi-angle-double-down font-bold text-xl"></i>
           &nbsp;<p-sortIcon field="is_below_min_stock" />
         </th>
-        <th pSortableColumn="has_near_expiry_batches">
-          <i class="pi pi-clock font-bold"></i>
+        <th pSortableColumn="has_near_expiry_batches" class="text-center">
+          <i class="pi pi-clock font-bold text-xl"></i>
           &nbsp;<p-sortIcon field="has_near_expiry_batches" />
         </th>
-        <th pSortableColumn="has_expired_batches">
-          <i class="pi pi-calendar-times font-bold"></i>
+        <th pSortableColumn="has_expired_batches" class="text-center">
+          <i class="pi pi-calendar-times font-bold text-xl"></i>
           &nbsp;<p-sortIcon field="has_expired_batches" />
         </th>
         <th style="width: 4rem"></th>
@@ -75,14 +82,15 @@
             [image]="$any(getSafeUrl(asset.image_path) || '')"
             shape="square"
             size="large"
-            icon="pi pi-box"
+            [icon]="asset.image_path ? '' : 'pi pi-box'"
           />
         </td>
         <td class="font-bold">{{ asset.denomination }}</td>
         <td>{{ asset.part_number }}</td>
         <td>{{ asset.barcode }}</td>
         <td>{{ asset.min_stock }}</td>
-        <td>
+        <td class="text-right font-bold">{{ asset.withdrawn_quantity }}</td>
+        <td class="text-right">
           <p-tag
             [value]="asset.total_quantity.toString()"
             [severity]="getQuantitySeverity(asset)"
@@ -90,17 +98,17 @@
         </td>
         <td class="text-center">
           @if (asset.is_below_min_stock) {
-            <i class="pi pi-angle-double-down text-red-500 font-bold"></i>
+            <p-tag value="Low Stock" severity="danger" />
           }
         </td>
         <td class="text-center">
           @if (asset.has_near_expiry_batches) {
-            <i class="pi pi-clock text-orange-500 font-bold"></i>
+            <p-tag value="Near Expiry" severity="warn" />
           }
         </td>
         <td class="text-center">
           @if (asset.has_expired_batches) {
-            <i class="pi pi-calendar-times text-red-500 font-bold"></i>
+            <p-tag value="Expired" severity="danger" />
           }
         </td>
         <td class="relative">
@@ -118,10 +126,10 @@
         </td>
       </tr>
     </ng-template>
-    <ng-template #expandedrow let-asset>
+    <ng-template pTemplate="rowexpansion" let-asset>
       <tr>
         <td></td>
-        <td colspan="10">
+        <td colspan="11">
           <div class="p-4">
             <p-table
               [value]="assetBatches[asset.id]"
@@ -136,6 +144,7 @@
                   <th>Location</th>
                   <th>Quantity</th>
                   <th>Exp. Date</th>
+                  <th style="width: 4rem"></th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-batch>
@@ -168,6 +177,18 @@
                     } @else {
                       -
                     }
+                  </td>
+                  <td class="relative">
+                    <p-splitButton
+                      label="Withdraw"
+                      icon="pi pi-minus-circle"
+                      (onClick)="withdrawBatch(batch)"
+                      [model]="batchItems"
+                      (onDropdownClick)="setMenuBatch(batch, asset)"
+                      severity="secondary"
+                      size="small"
+                      appendTo="body"
+                    />
                   </td>
                 </tr>
               </ng-template>
@@ -218,7 +239,10 @@
 
 <p-drawer
   [(visible)]="batchFormDrawerVisible"
-  [header]="'Add Batch for ' + (selectedAsset?.denomination || 'Asset')"
+  [header]="
+    (selectedBatch ? 'Edit Batch for ' : 'Add Batch for ') +
+    (selectedAsset?.denomination || 'Asset')
+  "
   position="right"
   [style]="{ width: '40rem' }"
   [modal]="true"
@@ -228,6 +252,7 @@
     @if (batchFormDrawerVisible) {
       <app-asset-batch-form
         [asset]="selectedAsset"
+        [batch]="selectedBatch"
         (onSave)="onBatchFormSave()"
         (onCancel)="batchFormDrawerVisible = false"
       />

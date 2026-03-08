@@ -8,7 +8,8 @@ import { Component, input } from '@angular/core';
       <span>
         @if (location().parent) {
           <span>
-            {{ location().parent.denomination }} <i class="pi pi-angle-double-right"></i>
+            {{ location().parent.denomination }}
+            <i class="pi pi-angle-double-right text-muted-color text-sm"></i>
           </span>
         }
         {{ location().denomination }}

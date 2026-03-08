@@ -34,6 +34,7 @@ export class AssetBatchForm {
   cdr = inject(ChangeDetectorRef);
 
   asset = input.required<any>();
+  batch = input<any>(null); // Optional input for edit mode
   onSave = output<void>();
   onCancel = output<void>();
 
@@ -48,18 +49,37 @@ export class AssetBatchForm {
   loading = false;
 
   async ngOnInit() {
-    // Set default denomination
-    this.denomination = `Batch - ${this.asset().denomination}`;
-    this.loadLocations();
+    await this.loadLocations();
+
+    const b = this.batch();
+    if (b) {
+      // Edit mode
+      this.denomination = b.denomination;
+      this.serialNumber = b.serial_number;
+      this.quantity = b.quantity;
+      this.expirationDate = b.expiration_date ? new Date(b.expiration_date) : null;
+      // Find matching location object
+      if (b.location) {
+        this.selectedLocation =
+          this.locations.find((l: any) => l.id === b.location.id) || b.location;
+      }
+    } else {
+      // Create mode default
+      this.denomination = `Batch - ${this.asset().denomination}`;
+    }
   }
 
   async loadLocations() {
     try {
       this.locations = await this.locationService.getAll();
-      this.cdr.detectChanges(); // Manually trigger change detection after data load
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Error loading locations:', error);
     }
+  }
+
+  cancel() {
+    this.onCancel.emit();
   }
 
   async submit() {
@@ -75,7 +95,7 @@ export class AssetBatchForm {
     try {
       this.loading = true;
       const batchData = {
-        asset_id: this.asset().id,
+        asset: this.asset(),
         denomination: this.denomination,
         serial_number: this.serialNumber,
         quantity: this.quantity,
@@ -83,27 +103,35 @@ export class AssetBatchForm {
         location: this.selectedLocation,
       };
 
-      await this.batchService.create(batchData);
-      
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Batch created successfully',
-      });
+      if (this.batch()) {
+        // Update existing batch
+        await this.batchService.update({ ...batchData, id: this.batch().id });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Batch updated successfully',
+        });
+      } else {
+        // Create new batch
+        await this.batchService.create(batchData);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Batch created successfully',
+        });
+      }
+
       this.onSave.emit();
     } catch (error) {
-      console.error('Error creating batch:', error);
+      console.error('Error saving batch:', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to create batch',
+        detail: 'Failed to save batch',
       });
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
-  }
-
-  cancel() {
-    this.onCancel.emit();
   }
 }

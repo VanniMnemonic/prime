@@ -14,6 +14,7 @@ import { WithdrawalForm } from './withdrawal-form/withdrawal-form';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { MenuItem } from 'primeng/api';
 import { WithdrawalReturnForm } from './withdrawal-return-form/withdrawal-return-form';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-withdrawals',
@@ -38,6 +39,7 @@ import { WithdrawalReturnForm } from './withdrawal-return-form/withdrawal-return
 export class Withdrawals implements OnInit {
   withdrawalService = inject(WithdrawalService);
   cdr = inject(ChangeDetectorRef);
+  sanitizer = inject(DomSanitizer);
 
   withdrawals: any[] = [];
   loading: boolean = true;
@@ -58,6 +60,11 @@ export class Withdrawals implements OnInit {
 
   ngOnInit() {
     this.loadWithdrawals();
+  }
+
+  getSafeUrl(path: string) {
+    if (!path) return null;
+    return this.sanitizer.bypassSecurityTrustUrl(path);
   }
 
   setMenuWithdrawal(withdrawal: any) {

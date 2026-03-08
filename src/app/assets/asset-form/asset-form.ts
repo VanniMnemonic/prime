@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal } from '@angular/core';
+import { Component, inject, input, output, effect, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -29,6 +29,7 @@ export class AssetForm {
   assetService = inject(AssetService);
   messageService = inject(MessageService);
   sanitizer = inject(DomSanitizer);
+  cdr = inject(ChangeDetectorRef);
 
   asset = input<any>(null);
   onSave = output<void>();
@@ -77,8 +78,13 @@ export class AssetForm {
     if (filePath) {
       try {
         const uploadedPath = await this.assetService.uploadImage(filePath);
+        // Force change detection or signal update
+        // When bypassing security, we get a SafeUrl object
         this.imagePath.set(this.sanitizer.bypassSecurityTrustUrl(uploadedPath));
         this.form.patchValue({ image_path: uploadedPath });
+        
+        // Trigger change detection manually
+        this.cdr.detectChanges();
         this.messageService.add({
           severity: 'success',
           summary: 'Success',

@@ -3,12 +3,12 @@
     <p-toast />
     <div class="flex items-center gap-4">
       <p-avatar
-        [image]="$any(getSafeUrl(asset().image_path) || '')"
+        [image]="$any(getSafeUrl(asset().image_path))"
         shape="square"
         size="xlarge"
         [style]="{ width: '7rem', height: '7rem' }"
+        [icon]="asset().image_path ? '' : 'pi pi-box'"
         styleClass="rounded-xl"
-        icon="pi pi-box"
       />
       <div class="flex flex-col">
         <span class="text-xl font-bold">{{ asset().denomination }}</span>

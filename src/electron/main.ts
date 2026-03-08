@@ -563,6 +563,21 @@ ipcMain.handle('get-assets', async () => {
   const assetRepository = AppDataSource.getRepository(Asset);
   const assets = await assetRepository.find();
   const batchRepository = AppDataSource.getRepository(Batch);
+  const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
+
+  // Fetch all active withdrawals to calculate withdrawn quantity per asset
+  const activeWithdrawals = await withdrawalRepository.find({
+    where: { must_return: true, return_date: IsNull() },
+    relations: ['batch'],
+  });
+
+  const withdrawnMap = new Map<number, number>();
+  for (const w of activeWithdrawals) {
+    if (w.batch && w.batch.asset_id) {
+      const current = withdrawnMap.get(w.batch.asset_id) || 0;
+      withdrawnMap.set(w.batch.asset_id, current + (w.quantity - w.returned_quantity));
+    }
+  }
 
   const assetsWithDetails = await Promise.all(
     assets.map(async (asset) => {
@@ -585,6 +600,7 @@ ipcMain.handle('get-assets', async () => {
       return {
         ...asset,
         total_quantity: totalQty,
+        withdrawn_quantity: withdrawnMap.get(asset.id) || 0,
         is_below_min_stock: totalQty < asset.min_stock,
         has_expired_batches: hasExpired,
         has_near_expiry_batches: hasNearExpiry,
@@ -618,6 +634,11 @@ ipcMain.handle('add-batch', async (event, batchData: any) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   const batch = batchRepository.create(batchData);
   return await batchRepository.save(batch);
+});
+
+ipcMain.handle('update-batch', async (event, batchData: any) => {
+  const batchRepository = AppDataSource.getRepository(Batch);
+  return await batchRepository.save(batchData);
 });
 
 ipcMain.handle('get-batch-by-serial', async (event, serialNumber: string) => {

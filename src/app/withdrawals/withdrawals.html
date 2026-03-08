@@ -5,9 +5,6 @@
     size="large"
     [value]="withdrawals"
     [loading]="loading"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
     [globalFilterFields]="['user.first_name', 'user.last_name', 'batch.asset.denomination', 'batch.serial_number']"
     [tableStyle]="{ 'min-width': '50rem' }"
     dataKey="id"
@@ -46,7 +43,7 @@
       <tr>
         <td>{{ withdrawal.date | date: 'shortDate' }}</td>
         <td>
-          <p-avatar [image]="withdrawal.user?.image_path" shape="circle" size="normal" />
+          <p-avatar [image]="$any(getSafeUrl(withdrawal.user?.image_path) || '')" shape="circle" size="normal" [icon]="withdrawal.user?.image_path ? '' : 'pi pi-user'" />
         </td>
         <td>
           <div class="flex flex-col">
@@ -55,7 +52,7 @@
           </div>
         </td>
         <td>
-          <p-avatar [image]="withdrawal.batch?.asset?.image_path" shape="square" size="normal" icon="pi pi-box" />
+          <p-avatar [image]="$any(getSafeUrl(withdrawal.batch?.asset?.image_path) || '')" shape="square" size="normal" [icon]="withdrawal.batch?.asset?.image_path ? '' : 'pi pi-box'" />
         </td>
         <td class="font-bold">{{ withdrawal.batch?.asset?.denomination }}</td>
         <td>{{ withdrawal.batch?.serial_number }}</td>
@@ -112,10 +109,10 @@
 >
   <ng-template pTemplate="content">
     @if (returnDrawerVisible && selectedWithdrawal) {
-      <app-withdrawal-return-form 
-        [withdrawal]="selectedWithdrawal" 
-        (onSave)="onReturnSave()" 
-        (onCancel)="onReturnCancel()" 
+      <app-withdrawal-return-form
+        [withdrawal]="selectedWithdrawal"
+        (onSave)="onReturnSave()"
+        (onCancel)="onReturnCancel()"
       />
     }
   </ng-template>
