@@ -1,5 +1,4 @@
 import { Component, input, inject, ChangeDetectorRef, effect, output, computed } from '@angular/core';
-import { ImageModule } from 'primeng/image';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
@@ -17,11 +16,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DividerModule } from 'primeng/divider';
 import { LocationDisplay } from '../../shared/components/location-display';
 import { DomSanitizer } from '@angular/platform-browser';
+import { NotesComponent } from '../../shared/components/notes/notes';
+import { ImageDisplay } from '../../shared/components/image-display/image-display';
+import { AccordionModule } from 'primeng/accordion';
 
 @Component({
   selector: 'app-asset-detail',
   imports: [
-    ImageModule,
     ButtonModule,
     TooltipModule,
     ToastModule,
@@ -35,6 +36,9 @@ import { DomSanitizer } from '@angular/platform-browser';
     InputTextModule,
     DividerModule,
     LocationDisplay,
+    NotesComponent,
+    ImageDisplay,
+    AccordionModule,
   ],
   templateUrl: './asset-detail.html',
   styleUrl: './asset-detail.css',

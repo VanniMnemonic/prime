@@ -5,9 +5,11 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from './User';
 import { Batch } from './Batch';
+import { Note } from './Note';
 
 @Entity()
 export class Withdrawal {
@@ -16,6 +18,9 @@ export class Withdrawal {
 
   @CreateDateColumn()
   date!: Date;
+
+  @OneToMany(() => Note, (note) => note.withdrawal)
+  notes!: Note[];
 
   @Column({ type: 'int', default: 0 })
   quantity!: number;

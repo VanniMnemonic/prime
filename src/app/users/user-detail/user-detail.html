@@ -51,7 +51,14 @@
 
       </div>
     </div> -->
+    
     <p-divider />
+
+    <div class="mb-4">
+      <h3 class="text-lg font-bold mb-2">Notes</h3>
+      <app-notes entityType="user" [entityId]="user().id" />
+    </div>
+
     <div class="-mx-5">
       <p-table
         #dt

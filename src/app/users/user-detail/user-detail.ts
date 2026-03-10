@@ -14,6 +14,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { DividerModule } from 'primeng/divider';
 import { LocationDisplay } from '../../shared/components/location-display';
+import { NotesComponent } from '../../shared/components/notes/notes';
 
 @Component({
   selector: 'app-user-detail',
@@ -31,6 +32,7 @@ import { LocationDisplay } from '../../shared/components/location-display';
     InputTextModule,
     DividerModule,
     LocationDisplay,
+    NotesComponent,
   ],
   templateUrl: './user-detail.html',
   styleUrl: './user-detail.css',

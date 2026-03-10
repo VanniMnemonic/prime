@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Asset } from './Asset';
 import { Location } from './Location';
+import { Note } from './Note';
 
 @Entity()
 export class Batch {
@@ -16,6 +17,9 @@ export class Batch {
   @ManyToOne(() => Asset, (asset) => asset.batches)
   @JoinColumn({ name: 'asset_id' })
   asset!: Asset;
+
+  @OneToMany(() => Note, (note) => note.batch)
+  notes!: Note[];
 
   @Column({ nullable: true })
   location_id?: number;

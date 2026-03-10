@@ -5,6 +5,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ElectronService } from '../services/electron';
+import { BackupService } from '../services/backup.service';
 
 @Component({
   selector: 'app-settings',
@@ -15,6 +16,7 @@ import { ElectronService } from '../services/electron';
 })
 export class Settings {
   electronService = inject(ElectronService);
+  backupService = inject(BackupService);
   confirmationService = inject(ConfirmationService);
   messageService = inject(MessageService);
 
@@ -69,6 +71,60 @@ export class Settings {
             severity: 'error',
             summary: 'Error',
             detail: 'Failed to seed database',
+          });
+        } finally {
+          this.loading = false;
+        }
+      },
+    });
+  }
+
+  async exportBackup() {
+    try {
+      this.loading = true;
+      const success = await this.backupService.exportBackup();
+      if (success) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Backup exported successfully.',
+        });
+      }
+    } catch (error) {
+      console.error('Error exporting backup:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to export backup.',
+      });
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async importBackup() {
+    this.confirmationService.confirm({
+      header: 'Import Backup',
+      message: 'This will overwrite your current data. Are you sure you want to continue?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: async () => {
+        try {
+          this.loading = true;
+          const success = await this.backupService.importBackup();
+          if (success) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Backup imported successfully. Please restart the application.',
+            });
+          }
+        } catch (error) {
+          console.error('Error importing backup:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to import backup.',
           });
         } finally {
           this.loading = false;

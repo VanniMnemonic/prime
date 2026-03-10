@@ -6,6 +6,7 @@ import { Batch } from './entities/Batch';
 import { Withdrawal } from './entities/Withdrawal';
 import { Location } from './entities/Location';
 import { Title } from './entities/Title';
+import { Note } from './entities/Note';
 import path from 'path';
 import { app } from 'electron';
 
@@ -16,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: dbPath,
   synchronize: true,
   logging: false,
-  entities: [User, Asset, Batch, Withdrawal, Location, Title],
+  entities: [User, Asset, Batch, Withdrawal, Location, Title, Note],
   migrations: [],
   subscribers: [],
 });

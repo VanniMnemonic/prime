@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Batch } from './Batch';
+import { Note } from './Note';
 
 @Entity()
 export class Asset {
@@ -11,6 +12,9 @@ export class Asset {
 
   @OneToMany(() => Batch, (batch) => batch.asset)
   batches!: Batch[];
+
+  @OneToMany(() => Note, (note) => note.asset)
+  notes!: Note[];
 
   @Column({ nullable: true })
   part_number?: string;

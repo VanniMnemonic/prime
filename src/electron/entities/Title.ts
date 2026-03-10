@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Note } from './Note';
 
 @Entity()
 export class Title {
@@ -7,4 +8,7 @@ export class Title {
 
   @Column()
   title!: string;
+
+  @OneToMany(() => Note, (note) => note.title)
+  notes!: Note[];
 }

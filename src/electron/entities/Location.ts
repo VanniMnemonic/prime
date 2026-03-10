@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from './User';
 import { Batch } from './Batch';
+import { Note } from './Note';
 
 @Entity()
 export class Location {
@@ -31,4 +32,7 @@ export class Location {
 
   @OneToMany(() => Batch, (batch) => batch.location)
   batches?: Batch[];
+
+  @OneToMany(() => Note, (note) => note.location)
+  notes?: Note[];
 }

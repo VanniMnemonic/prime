@@ -3,6 +3,31 @@
     
     <div class="flex flex-col gap-4 p-4 border rounded-xl border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950">
         <div class="flex flex-col">
+            <span class="text-xl font-semibold">Data Management</span>
+            <span class="text-muted-color">Export or import your data.</span>
+        </div>
+        
+        <div class="flex gap-4">
+            <p-button 
+                label="Export Backup" 
+                icon="pi pi-download" 
+                severity="secondary" 
+                (onClick)="exportBackup()" 
+                [loading]="loading"
+            />
+            
+            <p-button 
+                label="Import Backup" 
+                icon="pi pi-upload" 
+                severity="secondary" 
+                (onClick)="importBackup()" 
+                [loading]="loading"
+            />
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-4 p-4 border rounded-xl border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950">
+        <div class="flex flex-col">
             <span class="text-xl font-semibold text-red-600 dark:text-red-400">Danger Zone</span>
             <span class="text-muted-color">Manage database and data state. These actions cannot be undone.</span>
         </div>

@@ -12,6 +12,8 @@ import { Asset } from './entities/Asset';
 import { Batch } from './entities/Batch';
 import { Withdrawal } from './entities/Withdrawal';
 import { IsNull } from 'typeorm';
+import { NoteService } from './services/note.service';
+import { BackupService } from './services/backup.service';
 
 let win: BrowserWindow | null = null;
 
@@ -91,89 +93,14 @@ app.on('ready', () => {
 
       if (locationCount === 0) {
         console.log('Seeding locations...');
-        // Complex
-        const complex = new Location();
-        complex.denomination = 'Headquarters';
-        complex.description = 'Main Corporate Headquarters';
-        complex.phone = '+1 555-0100';
-        await locationRepository.save(complex);
-
-        // Building A
-        const buildingA = new Location();
-        buildingA.denomination = 'Building A';
-        buildingA.description = 'Administrative Building';
-        buildingA.parent = complex;
-        await locationRepository.save(buildingA);
-
-        // Building A - Ground Floor
-        const groundFloorA = new Location();
-        groundFloorA.denomination = 'Ground Floor';
-        groundFloorA.description = 'Reception and Security';
-        groundFloorA.parent = buildingA;
-        await locationRepository.save(groundFloorA);
-
-        // Building A - Ground Floor - Reception
-        const reception = new Location();
-        reception.denomination = 'Reception';
-        reception.description = 'Main Entrance';
-        reception.phone = '+1 555-0101';
-        reception.parent = groundFloorA;
-        locations.push(await locationRepository.save(reception));
-
-        // Building A - Ground Floor - Security
-        const security = new Location();
-        security.denomination = 'Security Office';
-        security.description = 'Security Control Room';
-        security.phone = '+1 555-0102';
-        security.parent = groundFloorA;
-        locations.push(await locationRepository.save(security));
-
-        // Building A - 1st Floor
-        const firstFloorA = new Location();
-        firstFloorA.denomination = '1st Floor';
-        firstFloorA.description = 'Departments Floor';
-        firstFloorA.parent = buildingA;
-        await locationRepository.save(firstFloorA);
-
-        // Building A - 1st Floor - HR
-        const hr = new Location();
-        hr.denomination = 'HR Department';
-        hr.description = 'Human Resources';
-        hr.phone = '+1 555-0103';
-        hr.parent = firstFloorA;
-        locations.push(await locationRepository.save(hr));
-
-        // Building A - 1st Floor - IT
-        const it = new Location();
-        it.denomination = 'IT Support';
-        it.description = 'Information Technology';
-        it.phone = '+1 555-0104';
-        it.parent = firstFloorA;
-        locations.push(await locationRepository.save(it));
-
-        // Building B
-        const buildingB = new Location();
-        buildingB.denomination = 'Building B';
-        buildingB.description = 'Logistics Center';
-        buildingB.parent = complex;
-        await locationRepository.save(buildingB);
-
-        // Building B - Warehouse
-        const warehouse = new Location();
-        warehouse.denomination = 'Warehouse';
-        warehouse.description = 'Main Storage';
-        warehouse.parent = buildingB;
-        await locationRepository.save(warehouse);
-
-        // Building B - Warehouse - Logistics
-        const logistics = new Location();
-        logistics.denomination = 'Logistics Office';
-        logistics.description = 'Shipping and Receiving';
-        logistics.phone = '+1 555-0105';
-        logistics.parent = warehouse;
-        locations.push(await locationRepository.save(logistics));
-
-        console.log('Locations seeded.');
+        // Create a minimal Root location
+        const root = new Location();
+        root.denomination = 'Root';
+        root.description = 'Root Location';
+        await locationRepository.save(root);
+        locations.push(root);
+        
+        console.log('Root location created.');
       } else {
         // Fetch all leaf locations (those without children, assuming for now we just pick some known ones or all)
         // For simplicity in this mock update, let's just grab all locations and pick random ones
@@ -436,11 +363,34 @@ app.on('ready', () => {
         console.log('Withdrawals seeded.');
       }
 
-      createWindow();
-    })
-    .catch((err) => {
-      console.error('Error during Data Source initialization', err);
-    });
+      // Handle Notes
+      const noteService = new NoteService();
+
+      ipcMain.handle('get-notes', async (event, entityType: string, entityId: number) => {
+        return await noteService.getByEntity(entityType, entityId);
+      });
+
+      ipcMain.handle('add-note', async (event, note: any) => {
+        return await noteService.create(note);
+      });
+
+      ipcMain.handle('delete-note', async (event, id: number) => {
+    return await noteService.delete(id);
+  });
+
+  // Handle Backup
+  const backupService = new BackupService();
+
+  ipcMain.handle('export-backup', async () => {
+    return await backupService.exportBackup();
+  });
+
+  ipcMain.handle('import-backup', async () => {
+    return await backupService.importBackup();
+  });
+
+  createWindow();
+  });
 });
 
 app.on('window-all-closed', () => {

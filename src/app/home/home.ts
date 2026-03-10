@@ -1,12 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { TabsModule } from 'primeng/tabs';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-home',
-  imports: [TabsModule, RouterModule],
+  imports: [TabsModule, RouterModule, ToastModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
+  providers: [MessageService],
 })
 export class Home implements OnInit {
   router = inject(Router);
