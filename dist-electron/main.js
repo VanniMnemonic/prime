@@ -426,6 +426,7 @@ electron_1.ipcMain.handle('get-assets', async () => {
     const assetsWithDetails = assets.map((asset) => {
         const assetBatches = batchesByAssetId.get(asset.id) ?? [];
         const totalQty = assetBatches.reduce((sum, batch) => sum + batch.quantity, 0);
+        const inefficientQty = assetBatches.reduce((sum, batch) => sum + (batch.inefficient_quantity ?? 0), 0);
         const hasExpired = assetBatches.some((b) => b.expiration_date && new Date(b.expiration_date) < now);
         const hasNearExpiry = assetBatches.some((b) => {
             if (!b.expiration_date)
@@ -437,6 +438,7 @@ electron_1.ipcMain.handle('get-assets', async () => {
             ...asset,
             total_quantity: totalQty,
             withdrawn_quantity: withdrawnMap.get(asset.id) ?? 0,
+            inefficient_quantity: inefficientQty,
             is_below_min_stock: totalQty < asset.min_stock,
             has_expired_batches: hasExpired,
             has_near_expiry_batches: hasNearExpiry,
@@ -598,6 +600,69 @@ electron_1.ipcMain.handle('return-withdrawal', async (event, { id, date, returne
             batch.inefficient_quantity = (batch.inefficient_quantity || 0) + inefficientQuantity;
             await queryRunner.manager.save(batch);
         }
+        await queryRunner.commitTransaction();
+        return withdrawal;
+    }
+    catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+    }
+    finally {
+        await queryRunner.release();
+    }
+});
+electron_1.ipcMain.handle('force-return-withdrawal', async (event, { id, date, returnedQuantity }) => {
+    const queryRunner = data_source_1.AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+        const withdrawalRepository = queryRunner.manager.getRepository(Withdrawal_1.Withdrawal);
+        const withdrawal = await withdrawalRepository.findOne({
+            where: { id },
+            relations: ['batch'],
+        });
+        if (!withdrawal) {
+            throw new Error('Withdrawal not found');
+        }
+        if (withdrawal.return_date) {
+            throw new Error('Withdrawal already returned');
+        }
+        const currentReturned = withdrawal.returned_quantity || 0;
+        const remaining = withdrawal.quantity - currentReturned;
+        if (returnedQuantity > remaining) {
+            throw new Error('Returned quantity exceeds remaining withdrawn quantity');
+        }
+        withdrawal.returned_quantity = currentReturned + returnedQuantity;
+        if (withdrawal.returned_quantity >= withdrawal.quantity) {
+            withdrawal.return_date = new Date(date);
+        }
+        await queryRunner.manager.save(withdrawal);
+        const sourceBatch = withdrawal.batch;
+        if (!sourceBatch) {
+            throw new Error('Withdrawal batch not found');
+        }
+        const allBatches = await queryRunner.manager.find(Batch_1.Batch, {
+            where: { asset_id: sourceBatch.asset_id },
+        });
+        if (!allBatches.length) {
+            throw new Error('No batches found for asset');
+        }
+        const now = new Date();
+        const nonExpiredBatches = allBatches.filter((b) => !b.expiration_date || new Date(b.expiration_date) >= now);
+        const candidates = nonExpiredBatches.length ? nonExpiredBatches : allBatches;
+        const pickValue = (b) => {
+            if (!b.expiration_date)
+                return Number.MAX_SAFE_INTEGER;
+            return new Date(b.expiration_date).getTime();
+        };
+        let targetBatch = candidates[0];
+        for (const b of candidates.slice(1)) {
+            if (pickValue(b) > pickValue(targetBatch)) {
+                targetBatch = b;
+            }
+        }
+        targetBatch.quantity += returnedQuantity;
+        await queryRunner.manager.save(targetBatch);
         await queryRunner.commitTransaction();
         return withdrawal;
     }

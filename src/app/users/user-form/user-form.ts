@@ -13,11 +13,13 @@ import { TreeNode } from 'primeng/api';
 import { ImageModule } from 'primeng/image';
 import { FileUploadModule } from 'primeng/fileupload';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { StepperModule } from 'primeng/stepper';
 
 @Component({
   selector: 'app-user-form',
   imports: [
     ReactiveFormsModule,
+    StepperModule,
     ButtonModule,
     InputTextModule,
     SelectModule,
@@ -55,6 +57,7 @@ export class UserForm {
     first_name: ['', Validators.required],
     last_name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
+    mobile: [''],
     barcode: [''],
     location: [null],
     title: [null as any],
@@ -80,7 +83,7 @@ export class UserForm {
           };
         }
         this.form.patchValue(formData);
-        
+
         // Handle image path protocol for display
         // If it starts with local-resource://, we can use it directly if we registered the protocol
         // Or if we need to bypass security in dev mode
@@ -179,8 +182,8 @@ export class UserForm {
     if (!file) return;
 
     // Immediate preview from blob URL
-    const previewUrl = file.objectURL
-      ?? this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
+    const previewUrl =
+      file.objectURL ?? this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
     this.imagePath.set(previewUrl);
 
     // Persist via Electron upload
@@ -211,7 +214,9 @@ export class UserForm {
 
     const formValue = this.form.value;
     // Extract actual location object from TreeSelect node (which puts the node in the control)
-    const location = formValue.location ? (formValue.location as any).data || formValue.location : null;
+    const location = formValue.location
+      ? (formValue.location as any).data || formValue.location
+      : null;
 
     const userData = {
       ...formValue,

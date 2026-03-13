@@ -8,19 +8,23 @@
       </trans-unit>
       <trans-unit id="assetNotFound" datatype="html">
         <source>Asset not found.</source>
-        <target>Risorsa non trovata.</target>
+        <target>Asset non trovato.</target>
       </trans-unit>
       <trans-unit id="editAssetDialogHeader" datatype="html">
         <source>Edit Asset</source>
-        <target>Modifica risorsa</target>
+        <target>Modifica asset</target>
+      </trans-unit>
+      <trans-unit id="addAssetDialogHeader" datatype="html">
+        <source>Add Asset</source>
+        <target>Aggiungi asset</target>
       </trans-unit>
       <trans-unit id="assetDetailTitle" datatype="html">
         <source>Asset Detail</source>
-        <target>Dettaglio risorsa</target>
+        <target>Dettaglio asset</target>
       </trans-unit>
       <trans-unit id="assetLabel" datatype="html">
         <source>Asset</source>
-        <target>Risorsa</target>
+        <target>Asset</target>
       </trans-unit>
       <trans-unit id="editBatchForHeader" datatype="html">
         <source>Edit Batch for <x id="assetName" equiv-text="assetName"/></source>
@@ -36,7 +40,7 @@
       </trans-unit>
       <trans-unit id="addAssetButton" datatype="html">
         <source>Add Asset</source>
-        <target>Aggiungi risorsa</target>
+        <target>Aggiungi asset</target>
       </trans-unit>
       <trans-unit id="batchButton" datatype="html">
         <source>Batch</source>
@@ -56,7 +60,7 @@
       </trans-unit>
       <trans-unit id="appTitle" datatype="html">
         <source>Warehouse Prime</source>
-        <target>Magazzino Prime</target>
+        <target>Warehouse Prime</target>
       </trans-unit>
       <trans-unit id="tabDashboard" datatype="html">
         <source>Dashboard</source>
@@ -68,7 +72,7 @@
       </trans-unit>
       <trans-unit id="tabAssets" datatype="html">
         <source>Assets</source>
-        <target>Risorse</target>
+        <target>Asset</target>
       </trans-unit>
       <trans-unit id="tabWithdrawals" datatype="html">
         <source>Withdrawals</source>
@@ -76,7 +80,7 @@
       </trans-unit>
       <trans-unit id="tabLocations" datatype="html">
         <source>Locations</source>
-        <target>Sedi</target>
+        <target>Posizioni</target>
       </trans-unit>
       <trans-unit id="tabSettings" datatype="html">
         <source>Settings</source>
@@ -254,6 +258,146 @@
         <source>Add Withdrawal</source>
         <target>Aggiungi prelievo</target>
       </trans-unit>
+      <trans-unit id="withdrawalStepSelectUser" datatype="html">
+        <source>Select User</source>
+        <target>Seleziona utente</target>
+      </trans-unit>
+      <trans-unit id="withdrawalStepSelectAsset" datatype="html">
+        <source>Select Asset</source>
+        <target>Seleziona asset</target>
+      </trans-unit>
+      <trans-unit id="withdrawalStepDetails" datatype="html">
+        <source>Details</source>
+        <target>Dettagli</target>
+      </trans-unit>
+      <trans-unit id="withdrawalUserBarcodeLabel" datatype="html">
+        <source>User Barcode</source>
+        <target>Codice a barre utente</target>
+      </trans-unit>
+      <trans-unit id="withdrawalUserBarcodePlaceholder" datatype="html">
+        <source>Scan user barcode...</source>
+        <target>Scansiona codice a barre utente…</target>
+      </trans-unit>
+      <trans-unit id="pressEnterToSearch" datatype="html">
+        <source>Press Enter to search</source>
+        <target>Premi Invio per cercare</target>
+      </trans-unit>
+      <trans-unit id="withdrawalUserRole" datatype="html">
+        <source>Role: <x id="INTERPOLATION" equiv-text="{{ selectedUser.role }}"/></source>
+        <target>Ruolo: <x id="INTERPOLATION" equiv-text="{{ selectedUser.role }}"/></target>
+      </trans-unit>
+      <trans-unit id="withdrawalChangeUserTooltip" datatype="html">
+        <source>Change User</source>
+        <target>Cambia utente</target>
+      </trans-unit>
+      <trans-unit id="withdrawalSelectedUserLabel" datatype="html">
+        <source>Selected User</source>
+        <target>Utente selezionato</target>
+      </trans-unit>
+      <trans-unit id="withdrawalEditUserTooltip" datatype="html">
+        <source>Edit User</source>
+        <target>Modifica utente</target>
+      </trans-unit>
+      <trans-unit id="withdrawalAssetBatchBarcodeLabel" datatype="html">
+        <source>Asset/Batch Barcode</source>
+        <target>Codice a barre asset/lotto</target>
+      </trans-unit>
+      <trans-unit id="withdrawalAssetBatchBarcodePlaceholder" datatype="html">
+        <source>Scan asset or batch barcode...</source>
+        <target>Scansiona codice a barre asset o lotto…</target>
+      </trans-unit>
+      <trans-unit id="withdrawalBatchSerialNumber" datatype="html">
+        <source>S/N: <x id="INTERPOLATION" equiv-text="{{ selectedBatch.serial_number }}"/></source>
+        <target>S/N: <x id="INTERPOLATION" equiv-text="{{ selectedBatch.serial_number }}"/></target>
+      </trans-unit>
+      <trans-unit id="withdrawalAutoSelectBatches" datatype="html">
+        <source>Auto-Select Batches</source>
+        <target>Seleziona automaticamente i lotti</target>
+      </trans-unit>
+      <trans-unit id="withdrawalPartNumber" datatype="html">
+        <source>PN: <x id="INTERPOLATION" equiv-text="{{ selectedAsset?.part_number }}"/></source>
+        <target>PN: <x id="INTERPOLATION" equiv-text="{{ selectedAsset?.part_number }}"/></target>
+      </trans-unit>
+      <trans-unit id="withdrawalChangeAssetTooltip" datatype="html">
+        <source>Change Asset</source>
+        <target>Cambia asset</target>
+      </trans-unit>
+      <trans-unit id="withdrawalMultipleLocations" datatype="html">
+        <source>Multiple Locations</source>
+        <target>Più posizioni</target>
+      </trans-unit>
+      <trans-unit id="withdrawalAvailableQuantityLabel" datatype="html">
+        <source>Available Quantity</source>
+        <target>Quantità disponibile</target>
+      </trans-unit>
+      <trans-unit id="withdrawalSummaryUser" datatype="html">
+        <source>User</source>
+        <target>Utente</target>
+      </trans-unit>
+      <trans-unit id="withdrawalSummaryAsset" datatype="html">
+        <source>Asset</source>
+        <target>Asset</target>
+      </trans-unit>
+      <trans-unit id="withdrawalQuantityLabel" datatype="html">
+        <source>Quantity</source>
+        <target>Quantità</target>
+      </trans-unit>
+      <trans-unit id="withdrawalAvailableInline" datatype="html">
+        <source>Available: <x id="INTERPOLATION" equiv-text="{{ selectedBatch?.quantity || selectedAsset?.totalAvailable || 0 }}"/></source>
+        <target>Disponibile: <x id="INTERPOLATION" equiv-text="{{ selectedBatch?.quantity || selectedAsset?.totalAvailable || 0 }}"/></target>
+      </trans-unit>
+      <trans-unit id="withdrawalDateLabel" datatype="html">
+        <source>Date</source>
+        <target>Data</target>
+      </trans-unit>
+      <trans-unit id="withdrawalMustReturnLabel" datatype="html">
+        <source>Must Return</source>
+        <target>Da restituire</target>
+      </trans-unit>
+      <trans-unit id="withdrawalExpectedReturnDateLabel" datatype="html">
+        <source>Expected Return Date</source>
+        <target>Data prevista di restituzione</target>
+      </trans-unit>
+      <trans-unit id="withdrawalConfirmWithdrawalButton" datatype="html">
+        <source>Confirm Withdrawal</source>
+        <target>Conferma prelievo</target>
+      </trans-unit>
+      <trans-unit id="unknownLabel" datatype="html">
+        <source>Unknown</source>
+        <target>Sconosciuto</target>
+      </trans-unit>
+      <trans-unit id="withdrawalReturnBatchSerial" datatype="html">
+        <source>S/N: <x id="INTERPOLATION" equiv-text="{{ withdrawal().batch?.serial_number }}"/></source>
+        <target>S/N: <x id="INTERPOLATION" equiv-text="{{ withdrawal().batch?.serial_number }}"/></target>
+      </trans-unit>
+      <trans-unit id="withdrawalReturnTotalWithdrawn" datatype="html">
+        <source>Total Withdrawn</source>
+        <target>Totale prelevato</target>
+      </trans-unit>
+      <trans-unit id="withdrawalReturnAlreadyReturned" datatype="html">
+        <source>Already Returned</source>
+        <target>Già restituito</target>
+      </trans-unit>
+      <trans-unit id="confirmRestockHeader" datatype="html">
+        <source>Confirm Restock</source>
+        <target>Conferma ripristino</target>
+      </trans-unit>
+      <trans-unit id="confirmRestockMessage" datatype="html">
+        <source>This withdrawal was marked as consumed. Restock <x id="returnedQuantity" equiv-text="this.returnedQuantity"/> item(s) anyway?</source>
+        <target>Questo prelievo è stato segnato come consumato. Ripristinare comunque <x id="returnedQuantity" equiv-text="this.returnedQuantity"/> elemento/i?</target>
+      </trans-unit>
+      <trans-unit id="confirmRestockAcceptLabel" datatype="html">
+        <source>Restock</source>
+        <target>Ripristina</target>
+      </trans-unit>
+      <trans-unit id="toastReturnSuccessDetail" datatype="html">
+        <source>Asset returned successfully</source>
+        <target>Asset restituito correttamente</target>
+      </trans-unit>
+      <trans-unit id="toastReturnErrorDetail" datatype="html">
+        <source>Failed to return asset</source>
+        <target>Impossibile restituire l'asset</target>
+      </trans-unit>
       <trans-unit id="thBatch" datatype="html">
         <source>Batch</source>
         <target>Lotto</target>
@@ -285,6 +429,14 @@
       <trans-unit id="thLastName" datatype="html">
         <source>Last Name</source>
         <target>Cognome</target>
+      </trans-unit>
+      <trans-unit id="thTitle" datatype="html">
+        <source>Title</source>
+        <target>Titolo</target>
+      </trans-unit>
+      <trans-unit id="addUserDialogHeader" datatype="html">
+        <source>Add User</source>
+        <target>Aggiungi utente</target>
       </trans-unit>
       <trans-unit id="thBatchSN" datatype="html">
         <source>Batch S/N</source>
@@ -332,11 +484,11 @@
       </trans-unit>
       <trans-unit id="userFormLocationLabel" datatype="html">
         <source>Location</source>
-        <target>Sede</target>
+        <target>Posizione</target>
       </trans-unit>
       <trans-unit id="userFormLocationPlaceholder" datatype="html">
         <source>Select a Location</source>
-        <target>Seleziona una sede</target>
+        <target>Seleziona una posizione</target>  
       </trans-unit>
       <trans-unit id="saveButton" datatype="html">
         <source>Save</source>
@@ -349,6 +501,58 @@
       <trans-unit id="userFormNewTitleLabel" datatype="html">
         <source>Title</source>
         <target>Titolo</target>
+      </trans-unit>
+      <trans-unit id="userFormStepProfile" datatype="html">
+        <source>Profile</source>
+        <target>Profilo</target>
+      </trans-unit>
+      <trans-unit id="userFormStepContact" datatype="html">
+        <source>Contact</source>
+        <target>Contatto</target>
+      </trans-unit>
+      <trans-unit id="nextButton" datatype="html">
+        <source>Next</source>
+        <target>Avanti</target>
+      </trans-unit>
+      <trans-unit id="backButton" datatype="html">
+        <source>Back</source>
+        <target>Indietro</target>
+      </trans-unit>
+      <trans-unit id="userFormMobileLabel" datatype="html">
+        <source>Mobile</source>
+        <target>Cellulare</target>
+      </trans-unit>
+      <trans-unit id="addLocationButton" datatype="html">
+        <source>Add Location</source>
+        <target>Aggiungi posizione</target>
+      </trans-unit>
+      <trans-unit id="assetFormUploadImageChooseLabel" datatype="html">
+        <source>Upload Image</source>
+        <target>Carica immagine</target>
+      </trans-unit>
+      <trans-unit id="assetFormDenominationLabel" datatype="html">
+        <source>Denomination</source>
+        <target>Denominazione</target>
+      </trans-unit>
+      <trans-unit id="assetFormDenominationRequired" datatype="html">
+        <source>Denomination is required.</source>
+        <target>La denominazione è obbligatoria.</target>
+      </trans-unit>
+      <trans-unit id="assetFormPartNumberLabel" datatype="html">
+        <source>Part Number</source>
+        <target>Numero parte</target>
+      </trans-unit>
+      <trans-unit id="assetFormBarcodeLabel" datatype="html">
+        <source>Barcode</source>
+        <target>Codice a barre</target>
+      </trans-unit>
+      <trans-unit id="assetFormMinStockLabel" datatype="html">
+        <source>Minimum Stock</source>
+        <target>Scorta minima</target>
+      </trans-unit>
+      <trans-unit id="assetFormMinStockInvalid" datatype="html">
+        <source>Minimum Stock is required and must be non-negative.</source>
+        <target>La scorta minima è obbligatoria e non può essere negativa.</target>
       </trans-unit>
     </body>
   </file>

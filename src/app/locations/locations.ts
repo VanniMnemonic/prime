@@ -1,23 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { OrganizationChartModule } from 'primeng/organizationchart';
-import { TreeNode, MenuItem } from 'primeng/api';
+import { TreeNode } from 'primeng/api';
 import { LocationService } from '../services/location.service';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { LocationForm } from './location-form/location-form';
 import { CommonModule } from '@angular/common';
-import { SpeedDialModule } from 'primeng/speeddial';
 
 @Component({
   selector: 'app-locations',
-  imports: [
-    OrganizationChartModule,
-    ButtonModule,
-    DialogModule,
-    LocationForm,
-    CommonModule,
-    SpeedDialModule,
-  ],
+  imports: [OrganizationChartModule, ButtonModule, DialogModule, LocationForm, CommonModule],
   templateUrl: './locations.html',
   styleUrl: './locations.css',
 })
@@ -28,18 +20,6 @@ export class Locations implements OnInit {
   loading = signal(true);
   drawerVisible = signal(false);
   selectedLocation = signal<any>(null);
-
-  items: MenuItem[] = [
-    {
-      icon: 'pi pi-plus',
-      tooltipOptions: {
-        tooltipLabel: 'Add Root Location',
-      },
-      command: () => {
-        this.addRootLocation();
-      },
-    },
-  ];
 
   ngOnInit() {
     void this.loadLocations();

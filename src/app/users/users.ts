@@ -12,8 +12,6 @@ import { ChipModule } from 'primeng/chip';
 import { ButtonModule } from 'primeng/button';
 import { UserForm } from './user-form/user-form';
 import { CommonModule } from '@angular/common';
-import { SplitButtonModule } from 'primeng/splitbutton';
-import { MenuItem } from 'primeng/api';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { LocationDisplay } from '../shared/components/location-display';
 import { TagModule } from 'primeng/tag';
@@ -36,7 +34,6 @@ import { ToolbarModule } from 'primeng/toolbar';
     ChipModule,
     ButtonModule,
     UserForm,
-    SplitButtonModule,
     ScrollPanelModule,
     LocationDisplay,
     TagModule,
@@ -62,26 +59,10 @@ export class Users implements OnInit {
     this.loadUsers();
   }
 
-  items: MenuItem[] = [
-    {
-      label: $localize`:@@menuEdit:Edit`,
-      icon: 'pi pi-pencil',
-      command: () => {
-        this.openEditUser(this.selectedUser);
-      },
-    },
-    {
-      label: $localize`:@@menuAddWithdrawal:Add Withdrawal`,
-      icon: 'pi pi-cart-plus',
-      command: () => {
-        console.log('Add withdrawal for:', this.selectedUser);
-        // TODO: Implement add withdrawal logic
-      },
-    },
-  ];
-
-  setMenuUser(user: any) {
-    this.selectedUser = user;
+  getUserDialogHeader(): string {
+    return this.editingUser
+      ? $localize`:@@editUserDialogHeader:Edit User`
+      : $localize`:@@addUserDialogHeader:Add User`;
   }
 
   async loadUsers() {

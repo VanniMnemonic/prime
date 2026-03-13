@@ -3,10 +3,8 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { MenuItem } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { SplitButtonModule } from 'primeng/splitbutton';
 import { BatchService } from '../../services/batch.service';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +26,6 @@ import { AccordionModule } from 'primeng/accordion';
     ToastModule,
     TableModule,
     TagModule,
-    SplitButtonModule,
     DatePipe,
     FormsModule,
     IconFieldModule,
@@ -49,7 +46,7 @@ export class AssetDetail {
   onEdit = output<any>();
   onEditBatch = output<any>();
   onWithdrawBatch = output<any>();
-  
+
   messageService = inject(MessageService);
   batchService = inject(BatchService);
   cdr = inject(ChangeDetectorRef);
@@ -58,7 +55,6 @@ export class AssetDetail {
   batches: any[] = [];
   loading: boolean = true;
   searchValue: string | undefined;
-  selectedBatch: any;
 
   // Computed signal for image URL to ensure immediate updates
   imageUrl = computed(() => {
@@ -66,24 +62,6 @@ export class AssetDetail {
     if (!a?.image_path) return null;
     return this.sanitizer.bypassSecurityTrustUrl(a.image_path);
   });
-
-  batchItems: MenuItem[] = [
-    {
-      label: 'Edit',
-      icon: 'pi pi-pencil',
-      command: () => {
-        this.onEditBatch.emit(this.selectedBatch);
-      },
-    },
-    {
-      label: 'Delete',
-      icon: 'pi pi-trash',
-      command: () => {
-        // TODO: Implement delete logic or emit event
-        console.log('Delete batch', this.selectedBatch);
-      },
-    },
-  ];
 
   constructor() {
     effect(() => {
@@ -98,8 +76,16 @@ export class AssetDetail {
     });
   }
 
-  setMenuBatch(batch: any) {
-    this.selectedBatch = batch;
+  withdrawBatch(batch: any) {
+    this.onWithdrawBatch.emit(batch);
+  }
+
+  editBatch(batch: any) {
+    this.onEditBatch.emit(batch);
+  }
+
+  deleteBatch(batch: any) {
+    console.log('Delete batch', batch);
   }
 
   getSafeUrl(path: string) {

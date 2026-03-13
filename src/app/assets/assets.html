@@ -61,6 +61,10 @@
         <th pSortableColumn="withdrawn_quantity" class="text-right" style="width: 6rem">
           <i class="pi pi-cart-arrow-down font-bold text-xl pt-1"></i>
         </th>
+        <th pSortableColumn="inefficient_quantity" class="text-right" style="width: 6rem">
+          <p-sortIcon field="inefficient_quantity" class="mr-2" />
+          <i class="pi pi-exclamation-triangle font-bold text-xl pt-1"></i>
+        </th>
         <th pSortableColumn="is_below_min_stock" class="text-center" style="width: 6rem">
           <i class="pi pi-angle-double-down font-bold text-xl pt-1"></i>
         </th>
@@ -97,6 +101,9 @@
         <td class="text-right font-bold text-muted-color">
           {{ asset.withdrawn_quantity }}
         </td>
+        <td class="text-right font-bold text-muted-color">
+          {{ asset.inefficient_quantity }}
+        </td>
         <td class="text-center">
           @if (asset.is_below_min_stock) {
             <p-tag severity="danger" class="p-2 pr-1">
@@ -126,17 +133,23 @@
               severity="secondary"
               (onClick)="openDetail(asset)"
             />
-            <p-splitButton
-              label="Batch"
-              i18n-label="@@batchButton"
-              icon="pi pi-plus"
-              (onClick)="openAddBatch(asset)"
-              [model]="items"
-              (onDropdownClick)="setMenuAsset(asset)"
-              outlined
+            <p-button
+              icon="pi pi-cart-arrow-down"
+              [rounded]="true"
               severity="secondary"
-              size="small"
-              appendTo="body"
+              (onClick)="openWithdraw(asset)"
+            />
+            <p-button
+              icon="pi pi-plus"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="openAddBatch(asset)"
+            />
+            <p-button
+              icon="pi pi-pencil"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="openEditAsset(asset)"
             />
           </div>
         </td>
@@ -147,7 +160,7 @@
 
 <p-dialog
   [(visible)]="formDrawerVisible"
-  [header]="editingAsset ? 'Edit Asset' : 'Add Asset'"
+  [header]="getAssetDialogHeader()"
   [modal]="true"
   [dismissableMask]="true"
   [style]="{ width: '40rem' }"
@@ -156,6 +169,25 @@
   <ng-template pTemplate="content">
     @if (formDrawerVisible) {
       <app-asset-form [asset]="editingAsset" (onSave)="onFormSave()" (onCancel)="onFormCancel()" />
+    }
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="withdrawFormDrawerVisible"
+  header="Add Withdrawal"
+  [modal]="true"
+  [dismissableMask]="true"
+  [style]="{ width: '55rem' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+>
+  <ng-template pTemplate="content">
+    @if (withdrawFormDrawerVisible) {
+      <app-withdrawal-form
+        [preselectedAsset]="selectedAssetForWithdrawal"
+        (onSave)="onWithdrawFormSave($event)"
+        (onCancel)="onWithdrawFormCancel()"
+      />
     }
   </ng-template>
 </p-dialog>

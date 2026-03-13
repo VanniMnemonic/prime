@@ -19,6 +19,7 @@
     <p-fileupload
       mode="basic"
       chooseLabel="Upload Image"
+      i18n-chooseLabel="@@assetFormUploadImageChooseLabel"
       chooseIcon="pi pi-upload"
       accept="image/*"
       maxFileSize="1000000"
@@ -29,25 +30,25 @@
   </div>
 
   <div class="flex flex-col gap-1">
-    <label for="denomination" class="font-bold">Denomination</label>
+    <label for="denomination" class="font-bold" i18n="@@assetFormDenominationLabel">Denomination</label>
     <input pInputText id="denomination" formControlName="denomination" />
     @if (form.get('denomination')?.invalid && form.get('denomination')?.touched) {
-      <small class="text-red-500">Denomination is required.</small>
+      <small class="text-red-500" i18n="@@assetFormDenominationRequired">Denomination is required.</small>
     }
   </div>
 
   <div class="flex flex-col gap-1">
-    <label for="part_number" class="font-bold">Part Number</label>
+    <label for="part_number" class="font-bold" i18n="@@assetFormPartNumberLabel">Part Number</label>
     <input pInputText id="part_number" formControlName="part_number" />
   </div>
 
   <div class="flex flex-col gap-1">
-    <label for="barcode" class="font-bold">Barcode</label>
+    <label for="barcode" class="font-bold" i18n="@@assetFormBarcodeLabel">Barcode</label>
     <input pInputText id="barcode" formControlName="barcode" />
   </div>
 
   <div class="flex flex-col gap-1">
-    <label for="min_stock" class="font-bold">Minimum Stock</label>
+    <label for="min_stock" class="font-bold" i18n="@@assetFormMinStockLabel">Minimum Stock</label>
     <p-inputnumber
       id="min_stock"
       formControlName="min_stock"
@@ -63,12 +64,20 @@
       decrementButtonIcon="pi pi-minus"
     />
     @if (form.get('min_stock')?.invalid && form.get('min_stock')?.touched) {
-      <small class="text-red-500">Minimum Stock is required and must be non-negative.</small>
+      <small class="text-red-500" i18n="@@assetFormMinStockInvalid"
+        >Minimum Stock is required and must be non-negative.</small
+      >
     }
   </div>
 
   <div class="flex justify-end gap-2 mt-4">
-    <p-button label="Cancel" severity="secondary" (onClick)="cancel()" />
-    <p-button label="Save" type="submit" [disabled]="form.invalid" />
+    <p-button
+      label="Cancel"
+      i18n-label="@@cancelButton"
+      severity="secondary"
+      type="button"
+      (onClick)="cancel()"
+    />
+    <p-button label="Save" i18n-label="@@saveButton" type="submit" [disabled]="form.invalid" />
   </div>
 </form>
