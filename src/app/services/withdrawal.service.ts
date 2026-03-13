@@ -32,4 +32,12 @@ export class WithdrawalService {
       inefficientQuantity,
     });
   }
+
+  async forceReturn(withdrawalId: number, returnDate: Date, returnedQuantity: number): Promise<any> {
+    return await this.electronService.invoke('force-return-withdrawal', {
+      id: withdrawalId,
+      date: returnDate,
+      returnedQuantity,
+    });
+  }
 }

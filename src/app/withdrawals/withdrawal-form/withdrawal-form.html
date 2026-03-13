@@ -1,9 +1,9 @@
 <div class="card flex justify-center">
   <p-stepper [value]="1" orientation="vertical" class="w-full">
     <p-step-list>
-      <p-step [value]="1">Select User</p-step>
-      <p-step [value]="2">Select Asset</p-step>
-      <p-step [value]="3">Details</p-step>
+      <p-step [value]="1" i18n="@@withdrawalStepSelectUser">Select User</p-step>
+      <p-step [value]="2" i18n="@@withdrawalStepSelectAsset">Select Asset</p-step>
+      <p-step [value]="3" i18n="@@withdrawalStepDetails">Details</p-step>
     </p-step-list>
 
     <p-step-panels>
@@ -13,7 +13,7 @@
           <div class="flex flex-col gap-4">
             @if (!selectedUser) {
               <div class="flex flex-col gap-2">
-                <label for="userBarcode">User Barcode</label>
+                <label for="userBarcode" i18n="@@withdrawalUserBarcodeLabel">User Barcode</label>
                 <p-iconfield iconPosition="left">
                   <p-inputicon class="pi pi-barcode" />
                   <input
@@ -23,11 +23,12 @@
                     [(ngModel)]="userBarcode"
                     (keydown.enter)="searchUser(); activateCallback(2)"
                     placeholder="Scan user barcode..."
+                    i18n-placeholder="@@withdrawalUserBarcodePlaceholder"
                     autofocus
                     class="w-full"
                   />
                 </p-iconfield>
-                <small class="text-muted-color">Press Enter to search</small>
+                <small class="text-muted-color" i18n="@@pressEnterToSearch">Press Enter to search</small>
               </div>
             } @else {
               <div
@@ -45,7 +46,7 @@
                     >{{ selectedUser.first_name }} {{ selectedUser.last_name }}</span
                   >
                   <span class="text-muted-color">{{ selectedUser.email }}</span>
-                  <span class="text-sm">Role: {{ selectedUser.role }}</span>
+                  <span class="text-sm" i18n="@@withdrawalUserRole">Role: {{ selectedUser.role }}</span>
                 </div>
                 <div class="ml-auto flex gap-2">
                   <p-button
@@ -54,6 +55,7 @@
                     [text]="true"
                     (onClick)="selectedUser = null; userBarcode = ''"
                     pTooltip="Change User"
+                    i18n-pTooltip="@@withdrawalChangeUserTooltip"
                   />
                   <i class="pi pi-check-circle text-green-500 text-2xl"></i>
                 </div>
@@ -63,6 +65,7 @@
           <div class="flex pt-6 justify-end">
             <p-button
               label="Next"
+              i18n-label="@@nextButton"
               icon="pi pi-arrow-right"
               iconPos="right"
               (onClick)="activateCallback(2)"
@@ -92,7 +95,9 @@
                   <span class="font-bold"
                     >{{ selectedUser.first_name }} {{ selectedUser.last_name }}</span
                   >
-                  <span class="text-sm text-muted-color">Selected User</span>
+                  <span class="text-sm text-muted-color" i18n="@@withdrawalSelectedUserLabel"
+                    >Selected User</span
+                  >
                 </div>
                 <div class="ml-auto">
                   <p-button
@@ -101,6 +106,7 @@
                     [text]="true"
                     (onClick)="activateCallback(1)"
                     pTooltip="Edit User"
+                    i18n-pTooltip="@@withdrawalEditUserTooltip"
                   />
                 </div>
               </div>
@@ -108,7 +114,9 @@
 
             @if (!selectedBatch && !selectedAsset) {
               <div class="flex flex-col gap-2">
-                <label for="assetBarcode">Asset/Batch Barcode</label>
+                <label for="assetBarcode" i18n="@@withdrawalAssetBatchBarcodeLabel"
+                  >Asset/Batch Barcode</label
+                >
                 <p-iconfield iconPosition="left">
                   <p-inputicon styleClass="pi pi-barcode" />
                   <input
@@ -118,11 +126,12 @@
                     [(ngModel)]="assetBarcode"
                     (keydown.enter)="searchAsset(); activateCallback(3)"
                     placeholder="Scan asset or batch barcode..."
+                    i18n-placeholder="@@withdrawalAssetBatchBarcodePlaceholder"
                     class="w-full"
                     autofocus
                   />
                 </p-iconfield>
-                <small class="text-muted-color">Press Enter to search</small>
+                <small class="text-muted-color" i18n="@@pressEnterToSearch">Press Enter to search</small>
               </div>
             } @else {
               <div
@@ -151,11 +160,17 @@
                     @if (selectedBatch) {
                       <span class="text-xl font-bold">{{ selectedBatch.asset?.denomination }}</span>
                       <span class="text-muted-color">{{ selectedBatch.denomination }}</span>
-                      <span class="text-sm">S/N: {{ selectedBatch.serial_number }}</span>
+                      <span class="text-sm" i18n="@@withdrawalBatchSerialNumber"
+                        >S/N: {{ selectedBatch.serial_number }}</span
+                      >
                     } @else {
                       <span class="text-xl font-bold">{{ selectedAsset?.denomination }}</span>
-                      <span class="text-muted-color">Auto-Select Batches</span>
-                      <span class="text-sm">PN: {{ selectedAsset?.part_number }}</span>
+                      <span class="text-muted-color" i18n="@@withdrawalAutoSelectBatches"
+                        >Auto-Select Batches</span
+                      >
+                      <span class="text-sm" i18n="@@withdrawalPartNumber"
+                        >PN: {{ selectedAsset?.part_number }}</span
+                      >
                     }
                   </div>
                   <div class="ml-auto flex gap-2">
@@ -165,23 +180,26 @@
                       [text]="true"
                       (onClick)="selectedBatch = null; selectedAsset = null; assetBarcode = ''"
                       pTooltip="Change Asset"
+                      i18n-pTooltip="@@withdrawalChangeAssetTooltip"
                     />
                     <i class="pi pi-check-circle text-green-500 text-2xl"></i>
                   </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mt-2">
                   <div class="flex flex-col">
-                    <span class="text-sm text-muted-color">Location</span>
+                    <span class="text-sm text-muted-color" i18n="@@thLocation">Location</span>
                     <span class="font-medium">
                       @if (selectedBatch) {
-                        {{ selectedBatch.location?.denomination || 'Unknown' }}
+                        {{ selectedBatch.location?.denomination || unknownLabel }}
                       } @else {
-                        Multiple Locations
+                        <span i18n="@@withdrawalMultipleLocations">Multiple Locations</span>
                       }
                     </span>
                   </div>
                   <div class="flex flex-col">
-                    <span class="text-sm text-muted-color">Available Quantity</span>
+                    <span class="text-sm text-muted-color" i18n="@@withdrawalAvailableQuantityLabel"
+                      >Available Quantity</span
+                    >
                     <span class="font-medium">
                       @if (selectedBatch) {
                         {{ selectedBatch.quantity }}
@@ -197,12 +215,14 @@
           <div class="flex pt-6 justify-between">
             <p-button
               label="Back"
+              i18n-label="@@backButton"
               icon="pi pi-arrow-left"
               (onClick)="activateCallback(1)"
               severity="secondary"
             />
             <p-button
               label="Next"
+              i18n-label="@@nextButton"
               icon="pi pi-arrow-right"
               iconPos="right"
               (onClick)="activateCallback(3)"
@@ -233,7 +253,7 @@
                     <span class="font-bold truncate"
                       >{{ selectedUser.first_name }} {{ selectedUser.last_name }}</span
                     >
-                    <span class="text-xs text-muted-color">User</span>
+                    <span class="text-xs text-muted-color" i18n="@@withdrawalSummaryUser">User</span>
                   </div>
                   <div class="ml-auto">
                     <p-button
@@ -261,7 +281,7 @@
                     <span class="font-bold truncate">{{
                       selectedBatch?.asset?.denomination || selectedAsset?.denomination
                     }}</span>
-                    <span class="text-xs text-muted-color">Asset</span>
+                    <span class="text-xs text-muted-color" i18n="@@withdrawalSummaryAsset">Asset</span>
                   </div>
                   <div class="ml-auto">
                     <p-button
@@ -277,7 +297,9 @@
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="quantity" class="font-medium">Quantity</label>
+              <label for="quantity" class="font-medium" i18n="@@withdrawalQuantityLabel"
+                >Quantity</label
+              >
               <div class="flex items-center gap-4">
                 <div class="flex-grow">
                   <p-slider
@@ -304,14 +326,13 @@
                   class="w-[8rem]"
                 />
               </div>
-              <small class="text-muted-color"
-                >Available:
-                {{ selectedBatch?.quantity || selectedAsset?.totalAvailable || 0 }}</small
+              <small class="text-muted-color" i18n="@@withdrawalAvailableInline"
+                >Available: {{ selectedBatch?.quantity || selectedAsset?.totalAvailable || 0 }}</small
               >
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="date">Date</label>
+              <label for="date" i18n="@@withdrawalDateLabel">Date</label>
               <p-datepicker
                 id="date"
                 [(ngModel)]="date"
@@ -329,12 +350,14 @@
                 [binary]="true"
                 inputId="mustReturn"
               />
-              <label for="mustReturn">Must Return</label>
+              <label for="mustReturn" i18n="@@withdrawalMustReturnLabel">Must Return</label>
             </div>
 
             @if (mustReturn) {
               <div class="flex flex-col gap-2">
-                <label for="returnDate">Expected Return Date</label>
+                <label for="returnDate" i18n="@@withdrawalExpectedReturnDateLabel"
+                  >Expected Return Date</label
+                >
                 <p-datepicker
                   id="returnDate"
                   [(ngModel)]="expectedReturnDate"
@@ -348,12 +371,14 @@
           <div class="flex pt-6 justify-between">
             <p-button
               label="Back"
+              i18n-label="@@backButton"
               icon="pi pi-arrow-left"
               (onClick)="activateCallback(2)"
               severity="secondary"
             />
             <p-button
               label="Confirm Withdrawal"
+              i18n-label="@@withdrawalConfirmWithdrawalButton"
               icon="pi pi-check"
               (onClick)="submit()"
               severity="success"

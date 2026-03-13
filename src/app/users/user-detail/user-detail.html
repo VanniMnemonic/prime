@@ -119,12 +119,10 @@
             </td>
             <td>{{ withdrawal.quantity }}</td>
             <td>
-              @if (withdrawal.must_return) {
-                @if (withdrawal.return_date) {
-                  <p-tag severity="success" value="Returned" />
-                } @else {
-                  <p-tag severity="warn" value="Borrowed" />
-                }
+              @if (withdrawal.return_date || (withdrawal.returned_quantity || 0) > 0) {
+                <p-tag severity="success" value="Returned" />
+              } @else if (withdrawal.must_return) {
+                <p-tag severity="warn" value="Borrowed" />
               } @else {
                 <p-tag severity="info" value="Consumed" />
               }
@@ -136,7 +134,7 @@
                   [rounded]="true"
                   severity="secondary"
                   (onClick)="openReturn(withdrawal)"
-                  [disabled]="!withdrawal.must_return || !!withdrawal.return_date"
+                  [disabled]="!!withdrawal.return_date"
                   pTooltip="Return Asset"
                   i18n-pTooltip="@@returnAssetTooltip"
                 />

@@ -9,8 +9,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
-import { SplitButtonModule } from 'primeng/splitbutton';
-import { MenuItem } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { AssetForm } from './asset-form/asset-form';
 import { AssetBatchForm } from './asset-batch-form/asset-batch-form';
@@ -19,6 +17,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { ImageDisplay } from '../shared/components/image-display/image-display';
 import { Router } from '@angular/router';
 import { ToolbarModule } from 'primeng/toolbar';
+import { WithdrawalService } from '../services/withdrawal.service';
+import { WithdrawalForm } from '../withdrawals/withdrawal-form/withdrawal-form';
 
 @Component({
   selector: 'app-assets',
@@ -31,10 +31,10 @@ import { ToolbarModule } from 'primeng/toolbar';
     FormsModule,
     ButtonModule,
     ImageModule,
-    SplitButtonModule,
     DialogModule,
     AssetForm,
     AssetBatchForm,
+    WithdrawalForm,
     TagModule,
     ImageDisplay,
     ToolbarModule,
@@ -45,6 +45,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 export class Assets implements OnInit {
   assetService = inject(AssetService);
   batchService = inject(BatchService);
+  withdrawalService = inject(WithdrawalService);
   cdr = inject(ChangeDetectorRef);
   sanitizer = inject(DomSanitizer);
   router = inject(Router);
@@ -55,41 +56,19 @@ export class Assets implements OnInit {
   selectedAsset: any;
   formDrawerVisible: boolean = false;
   batchFormDrawerVisible: boolean = false;
+  withdrawFormDrawerVisible: boolean = false;
   editingAsset: any = null;
   selectedBatch: any = null;
-
-  items: MenuItem[] = [
-    {
-      label: $localize`:@@menuViewDetails:View Details`,
-      icon: 'pi pi-eye',
-      command: () => {
-        this.openDetail(this.selectedAsset);
-      },
-    },
-    {
-      label: $localize`:@@menuEdit:Edit`,
-      icon: 'pi pi-pencil',
-      command: () => {
-        console.log('Edit asset:', this.selectedAsset);
-        this.openEditAsset(this.selectedAsset);
-      },
-    },
-    {
-      label: $localize`:@@menuDelete:Delete`,
-      icon: 'pi pi-trash',
-      command: () => {
-        console.log('Delete asset:', this.selectedAsset);
-        // TODO: Implement delete logic
-      },
-    },
-  ];
+  selectedAssetForWithdrawal: any = null;
 
   ngOnInit() {
     this.loadAssets();
   }
 
-  setMenuAsset(asset: any) {
-    this.selectedAsset = asset;
+  getAssetDialogHeader(): string {
+    return this.editingAsset
+      ? $localize`:@@editAssetDialogHeader:Edit Asset`
+      : $localize`:@@addAssetDialogHeader:Add Asset`;
   }
 
   openAddBatch(asset: any) {
@@ -158,6 +137,11 @@ export class Assets implements OnInit {
     this.formDrawerVisible = true;
   }
 
+  openWithdraw(asset: any) {
+    this.selectedAssetForWithdrawal = asset;
+    this.withdrawFormDrawerVisible = true;
+  }
+
   onFormSave() {
     this.formDrawerVisible = false;
     this.loadAssets();
@@ -166,6 +150,16 @@ export class Assets implements OnInit {
   async onBatchFormSave() {
     this.batchFormDrawerVisible = false;
     await this.loadAssets();
+  }
+
+  async onWithdrawFormSave(withdrawalData: any) {
+    this.withdrawFormDrawerVisible = false;
+    await this.withdrawalService.create(withdrawalData);
+    await this.loadAssets();
+  }
+
+  onWithdrawFormCancel() {
+    this.withdrawFormDrawerVisible = false;
   }
 
   onFormCancel() {

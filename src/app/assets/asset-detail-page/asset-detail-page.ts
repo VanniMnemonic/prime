@@ -7,10 +7,20 @@ import { AssetService } from '../../services/asset.service';
 import { AssetDetail } from '../asset-detail/asset-detail';
 import { AssetForm } from '../asset-form/asset-form';
 import { AssetBatchForm } from '../asset-batch-form/asset-batch-form';
+import { WithdrawalForm } from '../../withdrawals/withdrawal-form/withdrawal-form';
+import { WithdrawalService } from '../../services/withdrawal.service';
 
 @Component({
   selector: 'app-asset-detail-page',
-  imports: [CommonModule, ButtonModule, DialogModule, AssetDetail, AssetForm, AssetBatchForm],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    DialogModule,
+    AssetDetail,
+    AssetForm,
+    AssetBatchForm,
+    WithdrawalForm,
+  ],
   templateUrl: './asset-detail-page.html',
   styleUrl: './asset-detail-page.css',
 })
@@ -18,6 +28,7 @@ export class AssetDetailPage {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private assetService = inject(AssetService);
+  private withdrawalService = inject(WithdrawalService);
   private cdr = inject(ChangeDetectorRef);
 
   asset: any = null;
@@ -25,8 +36,10 @@ export class AssetDetailPage {
 
   formDrawerVisible = false;
   batchFormDrawerVisible = false;
+  withdrawFormDrawerVisible = false;
   editingAsset: any = null;
   selectedBatch: any = null;
+  selectedBatchForWithdrawal: any = null;
 
   get pageTitle() {
     return this.asset?.denomination ?? $localize`:@@assetDetailTitle:Asset Detail`;
@@ -49,7 +62,7 @@ export class AssetDetailPage {
     });
   }
 
-  async loadAsset() {
+  async loadAsset(force = false) {
     const idParam = this.route.snapshot.paramMap.get('id');
     const assetId = idParam ? Number(idParam) : NaN;
     if (!Number.isFinite(assetId)) {
@@ -59,7 +72,7 @@ export class AssetDetailPage {
       return;
     }
 
-    if (this.asset?.id === assetId) {
+    if (!force && this.asset?.id === assetId) {
       this.loading = false;
       this.cdr.detectChanges();
       return;
@@ -91,7 +104,21 @@ export class AssetDetailPage {
   }
 
   withdrawBatch(batch: any) {
-    console.log('Withdraw batch:', batch);
+    this.selectedBatchForWithdrawal = {
+      ...batch,
+      asset: batch.asset ?? this.asset,
+    };
+    this.withdrawFormDrawerVisible = true;
+  }
+
+  async onWithdrawFormSave(withdrawalData: any) {
+    this.withdrawFormDrawerVisible = false;
+    await this.withdrawalService.create(withdrawalData);
+    await this.loadAsset(true);
+  }
+
+  onWithdrawFormCancel() {
+    this.withdrawFormDrawerVisible = false;
   }
 
   onFormSave() {

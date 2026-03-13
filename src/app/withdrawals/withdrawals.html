@@ -59,12 +59,12 @@
     </ng-template>
     <ng-template pTemplate="body" let-withdrawal>
       <tr>
-        <td>{{ withdrawal.date | date: 'shortDate' }}</td>
+        <td>{{ withdrawal.date | date: 'fullDate' }}</td>
         <td>
           <app-image-display
             [image]="withdrawal.user?.image_path"
-            width="40px"
-            height="40px"
+            width="60px"
+            height="60px"
             shape="circle"
             icon="pi pi-user"
           />
@@ -78,8 +78,8 @@
         <td>
           <app-image-display
             [image]="withdrawal.batch?.asset?.image_path"
-            width="40px"
-            height="40px"
+            width="60px"
+            height="60px"
             shape="square"
             icon="pi pi-box"
           />
@@ -88,12 +88,12 @@
         <td>{{ withdrawal.batch?.serial_number }}</td>
         <td>{{ withdrawal.quantity }}</td>
         <td>
-          @if (!withdrawal.must_return) {
-            <p-tag value="Consumed" severity="success" />
-          } @else if (withdrawal.return_date) {
+          @if (withdrawal.return_date || (withdrawal.returned_quantity || 0) > 0) {
             <p-tag value="Returned" severity="info" />
-          } @else {
+          } @else if (withdrawal.must_return) {
             <p-tag value="Active" severity="warn" />
+          } @else {
+            <p-tag value="Consumed" severity="success" />
           }
         </td>
         <td class="relative">
@@ -103,7 +103,7 @@
               [rounded]="true"
               severity="secondary"
               (onClick)="openReturn(withdrawal)"
-              [disabled]="!withdrawal.must_return || !!withdrawal.return_date"
+              [disabled]="!!withdrawal.return_date"
               pTooltip="Return Asset"
               i18n-pTooltip="@@returnAssetTooltip"
             />

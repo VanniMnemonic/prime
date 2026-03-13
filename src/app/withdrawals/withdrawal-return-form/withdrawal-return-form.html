@@ -1,5 +1,6 @@
 @if (withdrawal()) {
   <div class="flex flex-col gap-6">
+    <p-confirmpopup />
     <div
       class="flex flex-col gap-4 p-4 border rounded-xl border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950"
     >
@@ -14,7 +15,7 @@
         <div class="flex flex-col">
           <span class="text-xl font-bold">{{ withdrawal().batch?.asset?.denomination }}</span>
           <span class="text-muted-color">{{ withdrawal().batch?.denomination }}</span>
-          <span class="text-sm">S/N: {{ withdrawal().batch?.serial_number }}</span>
+          <span class="text-sm" i18n="@@withdrawalReturnBatchSerial">S/N: {{ withdrawal().batch?.serial_number }}</span>
         </div>
       </div>
 
@@ -36,11 +37,11 @@
 
       <div class="grid grid-cols-2 gap-4 mt-2">
         <div class="flex flex-col">
-          <span class="text-sm text-muted-color">Total Withdrawn</span>
+          <span class="text-sm text-muted-color" i18n="@@withdrawalReturnTotalWithdrawn">Total Withdrawn</span>
           <span class="font-medium text-lg">{{ withdrawal().quantity }}</span>
         </div>
         <div class="flex flex-col">
-          <span class="text-sm text-muted-color">Already Returned</span>
+          <span class="text-sm text-muted-color" i18n="@@withdrawalReturnAlreadyReturned">Already Returned</span>
           <span class="font-medium text-lg">{{ withdrawal().returned_quantity || 0 }}</span>
         </div>
       </div>
@@ -71,7 +72,7 @@
       >
     </div>
 
-    @if (returnedQuantity > 0) {
+    @if (returnedQuantity > 0 && withdrawal().must_return) {
       <div class="flex flex-col gap-2">
         <label for="inefficientQuantity" class="font-medium" i18n="@@inefficientQuantityLabel">
           Inefficient Quantity (Damaged/Lost)
@@ -121,7 +122,7 @@
         label="Confirm Return"
         i18n-label="@@confirmReturnButton"
         icon="pi pi-check"
-        (onClick)="submit()"
+        (onClick)="submit($event)"
         [loading]="loading"
       />
     </div>

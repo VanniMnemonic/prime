@@ -1,6 +1,8 @@
 import {
   Component,
   inject,
+  input,
+  effect,
   output,
   signal,
   ViewChild,
@@ -52,6 +54,9 @@ export class WithdrawalForm implements AfterViewInit {
   assetService = inject(AssetService);
   messageService = inject(MessageService);
 
+  preselectedAsset = input<any | null>(null);
+  preselectedBatch = input<any | null>(null);
+
   onSave = output<any>();
   onCancel = output<void>();
 
@@ -71,6 +76,22 @@ export class WithdrawalForm implements AfterViewInit {
   date = new Date();
   mustReturn = false;
   expectedReturnDate: Date | null = null;
+  unknownLabel = $localize`:@@unknownLabel:Unknown`;
+
+  constructor() {
+    effect(() => {
+      const asset = this.preselectedAsset();
+      if (asset) {
+        void this.selectAsset(asset, false);
+      }
+    });
+    effect(() => {
+      const batch = this.preselectedBatch();
+      if (batch) {
+        this.selectBatch(batch, false);
+      }
+    });
+  }
 
   ngAfterViewInit() {
     // Small delay to ensure the drawer animation/rendering is complete
@@ -122,6 +143,52 @@ export class WithdrawalForm implements AfterViewInit {
 
   selectedAsset: any = null;
 
+  private async selectAsset(asset: any, showToast: boolean) {
+    this.selectedAsset = asset;
+    this.selectedBatch = null;
+    this.quantity = 1;
+
+    const batches = await this.batchService.getByAsset(asset.id);
+    const now = new Date();
+    const validBatches = batches.filter(
+      (b: any) => b.quantity > 0 && (!b.expiration_date || new Date(b.expiration_date) >= now),
+    );
+    const totalQuantity = validBatches.reduce((sum: number, b: any) => sum + b.quantity, 0);
+    this.selectedAsset.totalAvailable = totalQuantity;
+
+    if (showToast) {
+      if (totalQuantity > 0) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Asset Found',
+          detail: `${asset.denomination} (Total Available: ${totalQuantity})`,
+        });
+      } else {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Out of Stock',
+          detail: 'Asset found but no valid stock available (checked expiration)',
+        });
+      }
+    }
+  }
+
+  private selectBatch(batch: any, showToast: boolean) {
+    this.selectedBatch = batch;
+    this.selectedAsset = batch.asset ?? null;
+    this.quantity = 1;
+
+    if (showToast) {
+      const assetName = batch.asset?.denomination ?? 'Batch';
+      const serial = batch.serial_number ? ` (S/N: ${batch.serial_number})` : '';
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Batch Found',
+        detail: `${assetName}${serial}`,
+      });
+    }
+  }
+
   async searchAsset() {
     if (!this.assetBarcode) return;
 
@@ -134,50 +201,15 @@ export class WithdrawalForm implements AfterViewInit {
 
       if (asset) {
         // Asset found - allow withdrawal from multiple batches
-        this.selectedAsset = asset;
-        this.selectedBatch = null; // Clear specific batch if asset is selected
-
-        // Calculate total available quantity from non-expired batches
-        const batches = await this.batchService.getByAsset(asset.id);
-        const now = new Date();
-        const validBatches = batches.filter(
-          (b: any) => b.quantity > 0 && (!b.expiration_date || new Date(b.expiration_date) >= now),
-        );
-        const totalQuantity = validBatches.reduce((sum: number, b: any) => sum + b.quantity, 0);
-
-        if (totalQuantity > 0) {
-          // Store total available for validation/max
-          this.selectedAsset.totalAvailable = totalQuantity;
-          this.quantity = 1;
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Asset Found',
-            detail: `${asset.denomination} (Total Available: ${totalQuantity})`,
-          });
-          return;
-        } else {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Out of Stock',
-            detail: 'Asset found but no valid stock available (checked expiration)',
-          });
-          return;
-        }
+        await this.selectAsset(asset, true);
+        return;
       }
 
       // 2. Check if it matches a batch serial number
       const batch = await this.batchService.getBySerial(this.assetBarcode);
       if (batch) {
         if (batch.quantity > 0) {
-          this.selectedBatch = batch;
-          this.selectedAsset = null; // Specific batch selected
-          this.quantity = 1;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Batch Found',
-            detail: `${batch.asset.denomination} (S/N: ${batch.serial_number})`,
-          });
+          this.selectBatch(batch, true);
           return;
         } else {
           this.messageService.add({
