@@ -170,9 +170,23 @@ async function startUiServer(distRoot) {
             }
         }
         catch {
-            res.writeHead(404);
-            res.end();
-            return;
+            if (/(^|\/)styles-[^\/]+\.css$/.test(safeRelativePath)) {
+                const fallbackRelativePath = safeRelativePath.replace(/styles-[^\/]+\.css$/, 'styles.css');
+                const fallbackPath = path.resolve(path.join(distRoot, fallbackRelativePath));
+                if (fallbackPath.startsWith(resolvedRoot) && fs.existsSync(fallbackPath)) {
+                    finalPath = fallbackPath;
+                }
+                else {
+                    res.writeHead(404);
+                    res.end();
+                    return;
+                }
+            }
+            else {
+                res.writeHead(404);
+                res.end();
+                return;
+            }
         }
         try {
             const data = fs.readFileSync(finalPath);
@@ -425,6 +439,19 @@ electron_1.ipcMain.handle('get-withdrawals', async () => {
         order: { date: 'DESC' },
     });
 });
+electron_1.ipcMain.handle('get-withdrawals-overdue', async () => {
+    const withdrawalRepository = data_source_1.AppDataSource.getRepository(Withdrawal_1.Withdrawal);
+    const now = new Date();
+    return await withdrawalRepository.find({
+        where: {
+            must_return: true,
+            return_date: (0, typeorm_1.IsNull)(),
+            expected_return_date: (0, typeorm_1.LessThan)(now),
+        },
+        relations: ['user', 'batch', 'batch.asset'],
+        order: { expected_return_date: 'ASC' },
+    });
+});
 electron_1.ipcMain.handle('get-withdrawals-by-user', async (event, userId) => {
     const withdrawalRepository = data_source_1.AppDataSource.getRepository(Withdrawal_1.Withdrawal);
     return await withdrawalRepository.find({
@@ -540,6 +567,26 @@ electron_1.ipcMain.handle('get-batches-by-location', async (event, locationId) =
         where: { location: { id: locationId } },
         relations: ['asset', 'location', 'location.parent'],
         order: { id: 'ASC' },
+    });
+});
+electron_1.ipcMain.handle('get-batches-expiring-within-days', async (event, days) => {
+    const batchRepository = data_source_1.AppDataSource.getRepository(Batch_1.Batch);
+    const now = new Date();
+    const until = new Date(now);
+    until.setDate(now.getDate() + Math.max(0, Number(days) || 0));
+    return await batchRepository.find({
+        where: { expiration_date: (0, typeorm_1.Between)(now, until) },
+        relations: ['asset', 'location', 'location.parent'],
+        order: { expiration_date: 'ASC' },
+    });
+});
+electron_1.ipcMain.handle('get-batches-expired', async () => {
+    const batchRepository = data_source_1.AppDataSource.getRepository(Batch_1.Batch);
+    const now = new Date();
+    return await batchRepository.find({
+        where: { expiration_date: (0, typeorm_1.LessThan)(now) },
+        relations: ['asset', 'location', 'location.parent'],
+        order: { expiration_date: 'DESC' },
     });
 });
 electron_1.ipcMain.handle('add-batch', async (event, batchData) => {
