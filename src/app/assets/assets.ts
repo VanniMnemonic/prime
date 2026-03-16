@@ -15,7 +15,7 @@ import { AssetBatchForm } from './asset-batch-form/asset-batch-form';
 import { TagModule } from 'primeng/tag';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageDisplay } from '../shared/components/image-display/image-display';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToolbarModule } from 'primeng/toolbar';
 import { WithdrawalService } from '../services/withdrawal.service';
 import { WithdrawalForm } from '../withdrawals/withdrawal-form/withdrawal-form';
@@ -51,6 +51,7 @@ export class Assets implements OnInit {
   cdr = inject(ChangeDetectorRef);
   sanitizer = inject(DomSanitizer);
   router = inject(Router);
+  route = inject(ActivatedRoute);
 
   assets: any[] = [];
   loading: boolean = true;
@@ -64,6 +65,17 @@ export class Assets implements OnInit {
   selectedAssetForWithdrawal: any = null;
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe(() => {
+      const action = this.route.snapshot.queryParamMap.get('action');
+      if (action === 'add') {
+        this.openAddAsset();
+        this.router.navigate([], {
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
     this.loadAssets();
   }
 
