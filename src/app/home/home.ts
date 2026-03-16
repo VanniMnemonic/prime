@@ -4,10 +4,11 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
+import { CommandPalette } from '../shared/components/command-palette/command-palette';
 
 @Component({
   selector: 'app-home',
-  imports: [TabsModule, RouterModule, ToastModule],
+  imports: [TabsModule, RouterModule, ToastModule, CommandPalette],
   templateUrl: './home.html',
   styleUrl: './home.css',
   providers: [MessageService],

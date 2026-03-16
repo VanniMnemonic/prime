@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WithdrawalService } from '../services/withdrawal.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { WithdrawalForm } from './withdrawal-form/withdrawal-form';
 import { WithdrawalReturnForm } from './withdrawal-return-form/withdrawal-return-form';
@@ -21,6 +21,7 @@ import { WithdrawalsTable } from './withdrawals-table/withdrawals-table';
 })
 export class Withdrawals implements OnInit {
   router = inject(Router);
+  route = inject(ActivatedRoute);
   withdrawalService = inject(WithdrawalService);
   cdr = inject(ChangeDetectorRef);
 
@@ -31,6 +32,17 @@ export class Withdrawals implements OnInit {
   selectedWithdrawal: any = null;
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe(() => {
+      const action = this.route.snapshot.queryParamMap.get('action');
+      if (action === 'add') {
+        this.openAddWithdrawal();
+        this.router.navigate([], {
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
     this.loadWithdrawals();
   }
 

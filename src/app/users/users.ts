@@ -63,6 +63,15 @@ export class Users implements OnInit {
       const raw = this.route.snapshot.queryParamMap.get('locationId');
       const id = raw ? Number(raw) : NaN;
       this.locationIdFilter = Number.isFinite(id) ? id : null;
+      const action = this.route.snapshot.queryParamMap.get('action');
+      if (action === 'add') {
+        this.openAddUser();
+        this.router.navigate([], {
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
       void this.loadUsers();
     });
   }
@@ -91,10 +100,10 @@ export class Users implements OnInit {
     this.router.navigate(['/users', user.id], { state: { user } });
   }
 
-  openAddUser(event: Event) {
+  openAddUser(event?: Event) {
     console.log('openAddUser clicked');
-    event.stopPropagation();
-    event.preventDefault();
+    event?.stopPropagation();
+    event?.preventDefault();
     this.editingUser = null;
     this.formDrawerVisible = true;
     console.log('formDrawerVisible set to:', this.formDrawerVisible);

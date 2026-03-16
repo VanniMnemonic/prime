@@ -12,7 +12,7 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { TreeDragDropService } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { ContextMenuModule } from 'primeng/contextmenu';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BatchService } from '../services/batch.service';
 import { UserService } from '../services/user.service';
 import { TableModule } from 'primeng/table';
@@ -42,6 +42,7 @@ export class Locations implements OnInit {
   batchService = inject(BatchService);
   userService = inject(UserService);
   router = inject(Router);
+  route = inject(ActivatedRoute);
 
   @ViewChild('nodeMenu') nodeMenu?: ContextMenu;
   nodeMenuItems = signal<MenuItem[]>([]);
@@ -67,6 +68,17 @@ export class Locations implements OnInit {
   hierarchySaving = signal(false);
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe(() => {
+      const action = this.route.snapshot.queryParamMap.get('action');
+      if (action === 'add') {
+        this.addRootLocation();
+        this.router.navigate([], {
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
     void this.loadLocations();
   }
 

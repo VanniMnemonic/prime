@@ -410,6 +410,74 @@
         <source>Select</source>
         <target>Seleziona</target>
       </trans-unit>
+      <trans-unit id="commandPaletteHeader" datatype="html">
+        <source>Command Palette</source>
+        <target>Palette comandi</target>
+      </trans-unit>
+      <trans-unit id="commandPalettePlaceholder" datatype="html">
+        <source>Type a command...</source>
+        <target>Scrivi un comando…</target>
+      </trans-unit>
+      <trans-unit id="commandPaletteEmpty" datatype="html">
+        <source>No commands found</source>
+        <target>Nessun comando trovato</target>
+      </trans-unit>
+      <trans-unit id="commandAddWithdrawal" datatype="html">
+        <source>Add withdrawal</source>
+        <target>Aggiungi prelievo</target>
+      </trans-unit>
+      <trans-unit id="commandAddWithdrawalDescription" datatype="html">
+        <source>Create a new withdrawal</source>
+        <target>Crea un nuovo prelievo</target>
+      </trans-unit>
+      <trans-unit id="commandAddUser" datatype="html">
+        <source>Add user</source>
+        <target>Aggiungi utente</target>
+      </trans-unit>
+      <trans-unit id="commandAddUserDescription" datatype="html">
+        <source>Create a new user</source>
+        <target>Crea un nuovo utente</target>
+      </trans-unit>
+      <trans-unit id="commandAddAsset" datatype="html">
+        <source>Add asset</source>
+        <target>Aggiungi asset</target>
+      </trans-unit>
+      <trans-unit id="commandAddAssetDescription" datatype="html">
+        <source>Create a new asset</source>
+        <target>Crea un nuovo asset</target>
+      </trans-unit>
+      <trans-unit id="commandAddLocation" datatype="html">
+        <source>Add location</source>
+        <target>Aggiungi posizione</target>
+      </trans-unit>
+      <trans-unit id="commandAddLocationDescription" datatype="html">
+        <source>Create a new location</source>
+        <target>Crea una nuova posizione</target>
+      </trans-unit>
+      <trans-unit id="commandGoDashboard" datatype="html">
+        <source>Go to dashboard</source>
+        <target>Vai alla dashboard</target>
+      </trans-unit>
+      <trans-unit id="commandGoUsers" datatype="html">
+        <source>Go to users</source>
+        <target>Vai agli utenti</target>
+      </trans-unit>
+      <trans-unit id="commandGoAssets" datatype="html">
+        <source>Go to assets</source>
+        <target>Vai agli asset</target>
+      </trans-unit>
+      <trans-unit id="commandGoWithdrawals" datatype="html">
+        <source>Go to withdrawals</source>
+        <target>Vai ai prelievi</target>
+      </trans-unit>
+      <trans-unit id="commandGoLocations" datatype="html">
+        <source>Go to locations</source>
+        <target>Vai alle posizioni</target>
+      </trans-unit>
+      <trans-unit id="commandGoSettings" datatype="html">
+        <source>Go to settings</source>
+        <target>Vai alle impostazioni</target>
+      </trans-unit>
       <trans-unit id="withdrawalUserRole" datatype="html">
         <source>Role: <x id="INTERPOLATION" equiv-text="{{ selectedUser.role }}"/></source>
         <target>Ruolo: <x id="INTERPOLATION" equiv-text="{{ selectedUser.role }}"/></target>
