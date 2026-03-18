@@ -77,7 +77,8 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 - Import `ImageDisplay`, PrimeNG `ButtonModule`
 - Write basic unit test
 
-### [ ] Step: Create UserSummary sub-component
+### [x] Step: Create UserSummary sub-component
+<!-- chat-id: 2b551dc7-6b53-4caf-a3dd-7dd7c51136fc -->
 - Create `src/app/shared/components/user-display/user-summary.ts`
 - Renders compact/dimmed user summary card: image, name, label ("Selected User" or "User"), edit button
 - Input: `size?: 'sm' | 'md'` (controls image dimensions and layout for step 2 vs step 3)
