@@ -22,7 +22,9 @@
     "electron:dev": "concurrently -k \"npm start\" \"npm run electron\"",
     "electron:it": "wait-on http-get://localhost:4200/it/ && electron src/electron/main.entry.js --dev --lang=it --ui=/it/",
     "electron:dev:it": "concurrently -k \"npm run dev:localize\" \"npm run serve:dist:it\" \"npm run electron:it\"",
-    "dist:win": "node scripts/dist-win.cjs"
+    "dist:win": "node scripts/dist-win.cjs",
+    "dist:mac": "node scripts/dist-mac.cjs",
+    "dist:linux": "node scripts/dist-linux.cjs"
   },
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -94,6 +96,27 @@
       "target": [
         {
           "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
           "arch": [
             "x64"
           ]

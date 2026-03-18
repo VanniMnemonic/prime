@@ -1,19 +1,18 @@
-import { Component, inject, input, output, effect, signal, SecurityContext } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { UserService } from '../../services/user.service';
-import { LocationService } from '../../services/location.service';
-import { TitleService } from '../../services/title.service';
+
+import { DomSanitizer } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
-import { TreeSelectModule } from 'primeng/treeselect';
-import { TreeNode } from 'primeng/api';
-import { ImageModule } from 'primeng/image';
 import { FileUploadModule } from 'primeng/fileupload';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { ImageModule } from 'primeng/image';
 import { StepperModule } from 'primeng/stepper';
+import { TitleService } from '../../services/title.service';
+import { LocationSelect } from '../../shared/components/location-select/location-select';
 
 @Component({
   selector: 'app-user-form',
@@ -25,7 +24,7 @@ import { StepperModule } from 'primeng/stepper';
     SelectModule,
     DialogModule,
     FormsModule,
-    TreeSelectModule,
+    LocationSelect,
     ImageModule,
     FileUploadModule,
   ],
@@ -36,7 +35,6 @@ import { StepperModule } from 'primeng/stepper';
 export class UserForm {
   fb = inject(FormBuilder);
   userService = inject(UserService);
-  locationService = inject(LocationService);
   titleService = inject(TitleService);
   messageService = inject(MessageService);
   sanitizer = inject(DomSanitizer);
@@ -45,7 +43,6 @@ export class UserForm {
   onSave = output<void>();
   onCancel = output<void>();
 
-  locations: TreeNode[] = [];
   titles: any[] = [];
   imagePath = signal<any>(null);
 
@@ -66,23 +63,13 @@ export class UserForm {
 
   constructor() {
     console.log('UserForm constructor called');
-    this.loadLocations();
     this.loadTitles();
 
     effect(() => {
       const u = this.user();
       console.log('UserForm effect triggered with user:', u);
       if (u) {
-        // Prepare location for TreeSelect (needs partial node object or key)
-        const formData = { ...u };
-        if (u.location) {
-          formData.location = {
-            label: u.location.denomination,
-            data: u.location,
-            key: u.location.id.toString(),
-          };
-        }
-        this.form.patchValue(formData);
+        this.form.patchValue(u);
 
         // Handle image path protocol for display
         // If it starts with local-resource://, we can use it directly if we registered the protocol
@@ -101,44 +88,6 @@ export class UserForm {
 
   ngOnInit() {
     console.log('UserForm initialized');
-  }
-
-  async loadLocations() {
-    const locations = await this.locationService.getAll();
-    this.locations = this.transformToTree(locations);
-  }
-
-  transformToTree(locations: any[]): TreeNode[] {
-    const map = new Map<number, TreeNode>();
-    const roots: TreeNode[] = [];
-
-    // First pass: create nodes
-    locations.forEach((loc) => {
-      map.set(loc.id, {
-        label: loc.denomination,
-        data: loc,
-        key: loc.id.toString(),
-        children: [],
-        expanded: true,
-      });
-    });
-
-    // Second pass: build hierarchy
-    locations.forEach((loc) => {
-      const node = map.get(loc.id);
-      if (node) {
-        if (loc.parent_id) {
-          const parentNode = map.get(loc.parent_id);
-          if (parentNode) {
-            parentNode.children?.push(node);
-          }
-        } else {
-          roots.push(node);
-        }
-      }
-    });
-
-    return roots;
   }
 
   async loadTitles() {
@@ -214,9 +163,7 @@ export class UserForm {
 
     const formValue = this.form.value;
     // Extract actual location object from TreeSelect node (which puts the node in the control)
-    const location = formValue.location
-      ? (formValue.location as any).data || formValue.location
-      : null;
+    const location = formValue.location ?? null;
 
     const userData = {
       ...formValue,

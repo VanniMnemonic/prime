@@ -29,6 +29,15 @@ protocol.registerSchemesAsPrivileged([
       corsEnabled: true,
     },
   },
+  {
+    scheme: 'local-resource',
+    privileges: {
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      bypassCSP: true,
+    },
+  },
 ]);
 
 let win: BrowserWindow | null = null;
@@ -309,22 +318,39 @@ app.on('ready', () => {
     }
   });
 
-  // Register 'local-resource' protocol to serve local files
-  protocol.registerFileProtocol('local-resource', (request, callback) => {
+  // Register 'local-resource' protocol to serve local files from the userData
+  // directory. We use protocol.handle (Fetch-based API) instead of the
+  // deprecated registerFileProtocol so that it works correctly on all
+  // platforms, including Windows.
+  //
+  // The key Windows problem with registerFileProtocol was that Chromium parses
+  // `local-resource://C:/path/file.png` as { host: 'c', pathname: '/path/file.png' }
+  // treating the drive letter as the URL host and silently dropping it.
+  // By registering the scheme as privileged (non-standard) above and
+  // reconstructing the path from both host and pathname we recover the full
+  // drive-letter path on Windows while remaining correct on macOS/Linux.
+  protocol.handle('local-resource', (request) => {
     try {
-      // Strip the protocol prefix to obtain the raw path segment.
-      // On Windows, path.join() uses '\' so stored URLs may contain either
-      // backslashes (old data) or forward slashes (new data after this fix).
-      // Chromium normalises backslashes to '/' before the request arrives here,
-      // so we only ever see forward slashes at this point; path.normalize then
-      // converts them back to the OS-native separator so the FS call succeeds.
-      let filePath = request.url.replace(/^local-resource:\/\//, '');
-      filePath = decodeURIComponent(filePath);
-      filePath = path.normalize(filePath);
-      return callback(filePath);
+      const parsed = new URL(request.url);
+      // On Windows, the drive letter ends up as `parsed.host` (e.g. "c")
+      // and the rest of the path is in `parsed.pathname` (e.g. "/Users/...").
+      // On macOS/Linux, host is empty and pathname holds the full path.
+      const hostPart = parsed.host ? parsed.host + ':' : '';
+      const filePath = path.normalize(
+        decodeURIComponent(hostPart + parsed.pathname),
+      );
+
+      if (!fs.existsSync(filePath)) {
+        return new Response('Not Found', { status: 404 });
+      }
+
+      const data = fs.readFileSync(filePath);
+      return new Response(data, {
+        headers: { 'content-type': contentTypeForPath(filePath) },
+      });
     } catch (error) {
-      console.error(error);
-      return callback('404');
+      console.error('local-resource protocol error:', error);
+      return new Response('Internal Server Error', { status: 500 });
     }
   });
 

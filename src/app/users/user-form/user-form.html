@@ -111,18 +111,10 @@
 
             <div class="flex flex-col gap-1">
               <label for="location" class="font-bold" i18n="@@userFormLocationLabel">Location</label>
-              <p-treeSelect
-                id="location"
+              <app-location-select
                 formControlName="location"
-                [options]="locations"
                 placeholder="Select a Location"
                 i18n-placeholder="@@userFormLocationPlaceholder"
-                [filter]="true"
-                filterBy="label"
-                [style]="{ width: '100%' }"
-                containerStyleClass="w-full"
-                selectionMode="single"
-                appendTo="body"
               />
             </div>
           </div>
