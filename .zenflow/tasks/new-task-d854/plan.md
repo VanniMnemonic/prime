@@ -92,7 +92,8 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 - Add `UserTableItem` to imports in `users.ts`
 - Run lint and typecheck; verify no regressions
 
-### [ ] Step: Refactor user-detail.html and user-detail.ts
+### [x] Step: Refactor user-detail.html and user-detail.ts
+<!-- chat-id: 8f59a483-8289-471a-8d19-6e871b92b775 -->
 - Replace the header block (image + name/email/location block) with `<app-user-full-detail [user]="user()" (copyEmail)="copyToClipboard($event)" />`
 - Add `UserFullDetail` to imports in `user-detail.ts`
 - Remove `copyToClipboard` internal template logic (keep method, wire via output)

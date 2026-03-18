@@ -1,31 +1,23 @@
 import { Component, input, inject, ChangeDetectorRef, effect, output } from '@angular/core';
-import { ImageModule } from 'primeng/image';
-import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { WithdrawalService } from '../../services/withdrawal.service';
-import { DividerModule } from 'primeng/divider';
-import { LocationDisplay } from '../../shared/components/location-display';
 import { NotesComponent } from '../../shared/components/notes/notes';
 import { DialogModule } from 'primeng/dialog';
 import { WithdrawalReturnForm } from '../../withdrawals/withdrawal-return-form/withdrawal-return-form';
 import { WithdrawalsTable } from '../../withdrawals/withdrawals-table/withdrawals-table';
 import { Router } from '@angular/router';
+import { UserFullDetail } from '../../shared/components/user-display/user-full-detail';
 
 @Component({
   selector: 'app-user-detail',
   imports: [
-    ImageModule,
-    ButtonModule,
-    TooltipModule,
     ToastModule,
-    DividerModule,
-    LocationDisplay,
     NotesComponent,
     DialogModule,
     WithdrawalReturnForm,
     WithdrawalsTable,
+    UserFullDetail,
   ],
   templateUrl: './user-detail.html',
   styleUrl: './user-detail.css',
