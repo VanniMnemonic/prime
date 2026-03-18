@@ -108,6 +108,7 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 - Run lint and typecheck
 
 ### [ ] Step: Final verification and report
+<!-- chat-id: 5490a1d8-51a3-439a-aec4-c820d6e66f29 -->
 - Run `npx tsc --noEmit` and fix any type errors
 - Run existing tests (`npx ng test --watch=false`)
 - Write report to `.zenflow/tasks/new-task-d854/report.md`
