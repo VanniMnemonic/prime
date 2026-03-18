@@ -46,32 +46,7 @@
     </ng-template>
     <ng-template pTemplate="body" let-user>
       <tr>
-        <td>
-          <app-image-display
-            [image]="user.image_path"
-            width="60px"
-            height="60px"
-            shape="square"
-            icon="pi pi-user"
-          />
-        </td>
-        <td>{{ user.title?.title }}</td>
-        <td>{{ user.first_name }}</td>
-        <td>{{ user.last_name }}</td>
-        <td>{{ user.email }}</td>
-        <td>
-          <app-location-display [location]="user.location" />
-        </td>
-        <td>{{ user.barcode }}</td>
-        <td>
-          @if (user.active_withdrawals > 0) {
-            <p-tag
-              [value]="user.active_withdrawals.toString()"
-              severity="warn"
-              class="text-center"
-            />
-          }
-        </td>
+        <app-user-table-item [user]="user" />
         <td class="relative">
           <div class="flex items-center gap-2">
             <p-button

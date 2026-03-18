@@ -86,7 +86,8 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 - Import `ImageDisplay`, PrimeNG `ButtonModule`
 - Write basic unit test
 
-### [ ] Step: Refactor users.html and users.ts
+### [x] Step: Refactor users.html and users.ts
+<!-- chat-id: 4b3701a1-2b95-4367-9228-401ec5796928 -->
 - Replace the inline `<td>` cells in `<ng-template pTemplate="body" let-user>` with `<app-user-table-item [user]="user" />`
 - Add `UserTableItem` to imports in `users.ts`
 - Run lint and typecheck; verify no regressions

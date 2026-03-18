@@ -13,9 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { UserForm } from './user-form/user-form';
 import { CommonModule } from '@angular/common';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
-import { LocationDisplay } from '../shared/components/location-display';
-import { TagModule } from 'primeng/tag';
-import { ImageDisplay } from '../shared/components/image-display/image-display';
+import { UserTableItem } from '../shared/components/user-display/user-table-item';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToolbarModule } from 'primeng/toolbar';
 
@@ -35,9 +33,7 @@ import { ToolbarModule } from 'primeng/toolbar';
     ButtonModule,
     UserForm,
     ScrollPanelModule,
-    LocationDisplay,
-    TagModule,
-    ImageDisplay,
+    UserTableItem,
     ToolbarModule,
   ],
   templateUrl: './users.html',
