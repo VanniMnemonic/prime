@@ -53,7 +53,8 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 
 ---
 
-### [ ] Step: Create UserTableItem sub-component
+### [x] Step: Create UserTableItem sub-component
+<!-- chat-id: e695e66a-fe74-4e35-9f41-ce15bf8a9d53 -->
 - Create `src/app/shared/components/user-display/user-table-item.ts`
 - Renders `<td>` cells: image, title, first_name, last_name, email, location, barcode, active_withdrawals badge
 - Host uses `display: contents` to be transparent inside `<tr>`
