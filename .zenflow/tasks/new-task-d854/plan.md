@@ -61,7 +61,8 @@ Save to `{@artifacts_path}/plan.md`. If the feature is trivial and doesn't warra
 - Import and use `ImageDisplay`, `LocationDisplay`, PrimeNG `TagModule`
 - Write basic unit test (renders without errors, displays user name)
 
-### [ ] Step: Create UserFullDetail sub-component
+### [x] Step: Create UserFullDetail sub-component
+<!-- chat-id: c45adaad-b480-410c-9a29-b3d42dd35089 -->
 - Create `src/app/shared/components/user-display/user-full-detail.ts`
 - Renders large image, title, full name, email with copy button, location
 - Output: `copyEmail` event (string)
