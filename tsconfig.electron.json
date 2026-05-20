@@ -21,5 +21,6 @@
       "module": "commonjs"
     }
   },
-  "include": ["src/electron/**/*", "src/shared/**/*"]
+  "include": ["src/electron/**/*"],
+  "exclude": ["src/electron/**/*.spec.ts"]
 }
