@@ -30,10 +30,6 @@
         <source>Edit Batch for <x id="assetName" equiv-text="assetName"/></source>
         <target>Modifica lotto per <x id="assetName" equiv-text="assetName"/></target>
       </trans-unit>
-      <trans-unit id="withdrawButton" datatype="html">
-        <source>Withdraw</source>
-        <target>Preleva</target>
-      </trans-unit>
       <trans-unit id="searchKeywordPlaceholder" datatype="html">
         <source>Search keyword</source>
         <target>Cerca…</target>
@@ -42,21 +38,9 @@
         <source>Add Asset</source>
         <target>Aggiungi asset</target>
       </trans-unit>
-      <trans-unit id="batchButton" datatype="html">
-        <source>Batch</source>
-        <target>Lotto</target>
-      </trans-unit>
       <trans-unit id="menuViewDetails" datatype="html">
         <source>View Details</source>
         <target>Vedi dettagli</target>
-      </trans-unit>
-      <trans-unit id="menuEdit" datatype="html">
-        <source>Edit</source>
-        <target>Modifica</target>
-      </trans-unit>
-      <trans-unit id="menuDelete" datatype="html">
-        <source>Delete</source>
-        <target>Elimina</target>
       </trans-unit>
       <trans-unit id="locationsMenuAdd" datatype="html">
         <source>Add</source>
@@ -462,17 +446,9 @@
         <source>Return Asset</source>
         <target>Restituisci risorsa</target>
       </trans-unit>
-      <trans-unit id="actionsButton" datatype="html">
-        <source>Actions</source>
-        <target>Azioni</target>
-      </trans-unit>
       <trans-unit id="addUserButton" datatype="html">
         <source>Add User</source>
         <target>Aggiungi utente</target>
-      </trans-unit>
-      <trans-unit id="menuAddWithdrawal" datatype="html">
-        <source>Add Withdrawal</source>
-        <target>Aggiungi prelievo</target>
       </trans-unit>
       <trans-unit id="quantityToReturnLabel" datatype="html">
         <source>Quantity to Return</source>
@@ -937,10 +913,6 @@
       <trans-unit id="addLocationButton" datatype="html">
         <source>Add Location</source>
         <target>Aggiungi posizione</target>
-      </trans-unit>
-      <trans-unit id="locationsHierarchyButton" datatype="html">
-        <source>Hierarchy</source>
-        <target>Gerarchia</target>
       </trans-unit>
       <trans-unit id="locationsHierarchyHeader" datatype="html">
         <source>Locations Hierarchy</source>
