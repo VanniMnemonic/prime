@@ -30,7 +30,7 @@ jobs:
         run: |
           npm run build:localize
           npm run build:electron
-          npx electron-builder --win
+          npx electron-builder --win --publish never
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -38,8 +38,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-portable
-          path: release/*.exe
+          path: release/
 
+      # electron-updater on Windows fetches `latest.yml` from the latest
+      # release on this repo to detect updates. Without that file the
+      # in-app "Check Updates" button shows "Update error" forever.
+      # Also include the .blockmap so future delta updates have the
+      # signature data they need.
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -47,6 +52,9 @@ jobs:
           name: ${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: release/*.exe
+          files: |
+            release/*.exe
+            release/latest.yml
+            release/*.blockmap
         env:
           GITHUB_TOKEN: ${{ github.token }}
