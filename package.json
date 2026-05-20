@@ -101,7 +101,8 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "artifactName": "Warehouse-Prime-Setup-${arch}.${ext}"
     },
     "mac": {
       "target": [
