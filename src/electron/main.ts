@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, type IpcMainInvokeEvent } from 'electron';
 import { autoUpdater, type ProgressInfo, type UpdateInfo } from 'electron-updater';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -68,6 +68,26 @@ function isDevMode(): boolean {
 
 function isUpdaterSupported(): boolean {
   return app.isPackaged && !isDevMode();
+}
+
+// Wrapper around `ipcMain.handle` that logs the channel name when the
+// handler rejects. The original error is re-thrown unchanged so the
+// renderer still sees the same rejection message (no `[ipc] X failed:`
+// prefix leaks into the user-facing toast). Replaces the previous
+// pattern where many handlers had no outer try/catch and errors
+// reached the renderer as opaque rejections with no breadcrumb.
+function handleIpc(
+  channel: string,
+  handler: (event: IpcMainInvokeEvent, ...args: any[]) => unknown,
+): void {
+  ipcMain.handle(channel, async (event, ...args) => {
+    try {
+      return await handler(event, ...args);
+    } catch (err) {
+      console.error(`[ipc] ${channel} failed:`, err);
+      throw err;
+    }
+  });
 }
 
 function toMinimalUpdateInfo(info: UpdateInfo): UpdateState['info'] {
@@ -381,16 +401,16 @@ app.on('ready', () => {
     console.error('Failed to ensure user data directory:', error);
   }
 
-  ipcMain.handle('get-app-version', () => {
+  handleIpc('get-app-version', () => {
     return app.getVersion();
   });
 
-  ipcMain.handle('get-update-status', () => {
+  handleIpc('get-update-status', () => {
     updateState.supported = isUpdaterSupported();
     return { ...updateState };
   });
 
-  ipcMain.handle('check-for-updates', async () => {
+  handleIpc('check-for-updates', async () => {
     initAutoUpdater();
     if (!updateState.supported) return { ...updateState };
     if (updateState.status === 'checking') return { ...updateState };
@@ -411,7 +431,7 @@ app.on('ready', () => {
     return { ...updateState };
   });
 
-  ipcMain.handle('download-update', async () => {
+  handleIpc('download-update', async () => {
     initAutoUpdater();
     if (!updateState.supported) return false;
     if (updateState.status !== 'available' && updateState.status !== 'downloading') return false;
@@ -427,7 +447,7 @@ app.on('ready', () => {
     }
   });
 
-  ipcMain.handle('quit-and-install-update', () => {
+  handleIpc('quit-and-install-update', () => {
     initAutoUpdater();
     if (!updateState.supported) return false;
     if (updateState.status !== 'downloaded') return false;
@@ -441,22 +461,22 @@ app.on('ready', () => {
     // Handle Notes
     const noteService = new NoteService();
 
-    ipcMain.handle('get-notes', async (event, entityType: string, entityId: number) => {
+    handleIpc('get-notes', async (event, entityType: string, entityId: number) => {
       return await noteService.getByEntity(entityType, entityId);
     });
 
-    ipcMain.handle('add-note', async (event, note: any) => {
+    handleIpc('add-note', async (event, note: any) => {
       return await noteService.create(note);
     });
 
-    ipcMain.handle('delete-note', async (event, id: number) => {
+    handleIpc('delete-note', async (event, id: number) => {
       return await noteService.delete(id);
     });
 
     // Handle Backup
     const backupService = new BackupService();
 
-    ipcMain.handle('export-backup', async () => {
+    handleIpc('export-backup', async () => {
       return await backupService.exportBackup();
     });
 
@@ -471,7 +491,7 @@ app.on('ready', () => {
     //      machine's imagesDir (idempotent — safe to re-run).
     // If the restore is cancelled by the user (file dialog dismissed) we
     // still re-initialize so the app remains usable.
-    ipcMain.handle('import-backup', async () => {
+    handleIpc('import-backup', async () => {
       if (AppDataSource.isInitialized) {
         await AppDataSource.destroy();
       }
@@ -513,7 +533,7 @@ app.on('window-all-closed', () => {
   }
 });
 
-ipcMain.handle('add-location', async (event, locationData: Partial<Location>) => {
+handleIpc('add-location', async (event, locationData: Partial<Location>) => {
   const startedAt = Date.now();
   const locationRepository = AppDataSource.getRepository(Location);
   const parentId = (locationData.parent_id ?? null) as number | null;
@@ -541,7 +561,7 @@ ipcMain.handle('add-location', async (event, locationData: Partial<Location>) =>
   };
 });
 
-ipcMain.handle('update-location', async (event, locationData: Partial<Location>) => {
+handleIpc('update-location', async (event, locationData: Partial<Location>) => {
   const locationRepository = AppDataSource.getRepository(Location);
   const saved = await locationRepository.save(locationData);
   return {
@@ -561,7 +581,7 @@ app.on('activate', () => {
 });
 
 // TypeORM IPC Handlers
-ipcMain.handle('get-users', async () => {
+handleIpc('get-users', async () => {
   const startedAt = Date.now();
   const userRepository = AppDataSource.getRepository(User);
   const users = await userRepository.find({
@@ -598,29 +618,29 @@ ipcMain.handle('get-users', async () => {
   return usersWithCount;
 });
 
-ipcMain.handle('add-user', async (event, userData: Partial<User>) => {
+handleIpc('add-user', async (event, userData: Partial<User>) => {
   const userRepository = AppDataSource.getRepository(User);
   const user = userRepository.create(userData);
   return await userRepository.save(user);
 });
 
-ipcMain.handle('update-user', async (event, userData: Partial<User>) => {
+handleIpc('update-user', async (event, userData: Partial<User>) => {
   const userRepository = AppDataSource.getRepository(User);
   return await userRepository.save(userData);
 });
 
-ipcMain.handle('get-titles', async () => {
+handleIpc('get-titles', async () => {
   const titleRepository = AppDataSource.getRepository(Title);
   return await titleRepository.find();
 });
 
-ipcMain.handle('add-title', async (event, titleData: Partial<Title>) => {
+handleIpc('add-title', async (event, titleData: Partial<Title>) => {
   const titleRepository = AppDataSource.getRepository(Title);
   const title = titleRepository.create(titleData);
   return await titleRepository.save(title);
 });
 
-ipcMain.handle('get-locations', async () => {
+handleIpc('get-locations', async () => {
   const startedAt = Date.now();
   const locationRepository = AppDataSource.getRepository(Location);
   const locations = await locationRepository
@@ -647,7 +667,7 @@ ipcMain.handle('get-locations', async () => {
   return locations;
 });
 
-ipcMain.handle(
+handleIpc(
   'update-locations-hierarchy',
   async (
     event,
@@ -672,7 +692,7 @@ ipcMain.handle(
   },
 );
 
-ipcMain.handle('get-withdrawals', async () => {
+handleIpc('get-withdrawals', async () => {
   const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
   return await withdrawalRepository.find({
     relations: ['user', 'batch', 'batch.asset'],
@@ -680,7 +700,7 @@ ipcMain.handle('get-withdrawals', async () => {
   });
 });
 
-ipcMain.handle('get-withdrawals-overdue', async () => {
+handleIpc('get-withdrawals-overdue', async () => {
   const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
   const now = new Date();
   return await withdrawalRepository.find({
@@ -694,7 +714,7 @@ ipcMain.handle('get-withdrawals-overdue', async () => {
   });
 });
 
-ipcMain.handle('get-withdrawals-by-user', async (event, userId: number) => {
+handleIpc('get-withdrawals-by-user', async (event, userId: number) => {
   const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
   return await withdrawalRepository.find({
     where: { user_id: userId },
@@ -703,7 +723,7 @@ ipcMain.handle('get-withdrawals-by-user', async (event, userId: number) => {
   });
 });
 
-ipcMain.handle('get-withdrawals-by-asset', async (event, assetId: number) => {
+handleIpc('get-withdrawals-by-asset', async (event, assetId: number) => {
   const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
   return await withdrawalRepository.find({
     where: { batch: { asset_id: assetId } },
@@ -712,7 +732,7 @@ ipcMain.handle('get-withdrawals-by-asset', async (event, assetId: number) => {
   });
 });
 
-ipcMain.handle('upload-image', async (event, filePath: string) => {
+handleIpc('upload-image', async (event, filePath: string) => {
   try {
     const userDataPath = getDataPath();
     const imagesDir = path.join(userDataPath, 'images');
@@ -745,7 +765,7 @@ ipcMain.handle('upload-image', async (event, filePath: string) => {
 // Returns every asset with its aggregated batch totals, active-withdrawal
 // count, and the expired / near-expiry flags computed entirely in SQL. One
 // query, no per-asset JS loop over the batch array.
-ipcMain.handle('get-assets', async () => {
+handleIpc('get-assets', async () => {
   const startedAt = Date.now();
 
   const now = new Date();
@@ -828,13 +848,13 @@ ipcMain.handle('get-assets', async () => {
   return assetsWithDetails;
 });
 
-ipcMain.handle('add-asset', async (event, assetData: Partial<Asset>) => {
+handleIpc('add-asset', async (event, assetData: Partial<Asset>) => {
   const assetRepository = AppDataSource.getRepository(Asset);
   const asset = assetRepository.create(assetData);
   return await assetRepository.save(asset);
 });
 
-ipcMain.handle('update-asset', async (event, assetData: Partial<Asset>) => {
+handleIpc('update-asset', async (event, assetData: Partial<Asset>) => {
   const assetRepository = AppDataSource.getRepository(Asset);
   return await assetRepository.save(assetData);
 });
@@ -844,7 +864,7 @@ ipcMain.handle('update-asset', async (event, assetData: Partial<Asset>) => {
 // — losing an open audit trail would corrupt the active-withdrawals count
 // shown on the users list. The image file on disk is removed best-effort
 // after the DB transaction commits.
-ipcMain.handle('delete-asset', async (event, assetId: number) => {
+handleIpc('delete-asset', async (event, assetId: number) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
 
@@ -935,7 +955,7 @@ ipcMain.handle('delete-asset', async (event, assetId: number) => {
   return true;
 });
 
-ipcMain.handle('get-batches-by-asset', async (event, assetId: number) => {
+handleIpc('get-batches-by-asset', async (event, assetId: number) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   return await batchRepository.find({
     where: { asset: { id: assetId } },
@@ -943,7 +963,7 @@ ipcMain.handle('get-batches-by-asset', async (event, assetId: number) => {
   });
 });
 
-ipcMain.handle('get-batches-by-location', async (event, locationId: number) => {
+handleIpc('get-batches-by-location', async (event, locationId: number) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   return await batchRepository.find({
     where: { location: { id: locationId } },
@@ -952,7 +972,7 @@ ipcMain.handle('get-batches-by-location', async (event, locationId: number) => {
   });
 });
 
-ipcMain.handle('get-batches-expiring-within-days', async (event, days: number) => {
+handleIpc('get-batches-expiring-within-days', async (event, days: number) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   const now = new Date();
   const until = new Date(now);
@@ -964,7 +984,7 @@ ipcMain.handle('get-batches-expiring-within-days', async (event, days: number) =
   });
 });
 
-ipcMain.handle('get-batches-expired', async () => {
+handleIpc('get-batches-expired', async () => {
   const batchRepository = AppDataSource.getRepository(Batch);
   const now = new Date();
   return await batchRepository.find({
@@ -974,18 +994,18 @@ ipcMain.handle('get-batches-expired', async () => {
   });
 });
 
-ipcMain.handle('add-batch', async (event, batchData: any) => {
+handleIpc('add-batch', async (event, batchData: any) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   const batch = batchRepository.create(batchData);
   return await batchRepository.save(batch);
 });
 
-ipcMain.handle('update-batch', async (event, batchData: any) => {
+handleIpc('update-batch', async (event, batchData: any) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   return await batchRepository.save(batchData);
 });
 
-ipcMain.handle('get-batch-by-serial', async (event, serialNumber: string) => {
+handleIpc('get-batch-by-serial', async (event, serialNumber: string) => {
   const batchRepository = AppDataSource.getRepository(Batch);
   return await batchRepository.findOne({
     where: { serial_number: serialNumber },
@@ -993,7 +1013,7 @@ ipcMain.handle('get-batch-by-serial', async (event, serialNumber: string) => {
   });
 });
 
-ipcMain.handle('add-withdrawal', async (event, withdrawalData: any) => {
+handleIpc('add-withdrawal', async (event, withdrawalData: any) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
   await queryRunner.startTransaction();
@@ -1085,7 +1105,7 @@ ipcMain.handle('add-withdrawal', async (event, withdrawalData: any) => {
   }
 });
 
-ipcMain.handle(
+handleIpc(
   'return-withdrawal',
   async (event, { id, date, returnedQuantity, inefficientQuantity }) => {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -1149,7 +1169,7 @@ ipcMain.handle(
   },
 );
 
-ipcMain.handle('force-return-withdrawal', async (event, { id, date, returnedQuantity }) => {
+handleIpc('force-return-withdrawal', async (event, { id, date, returnedQuantity }) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
   await queryRunner.startTransaction();
@@ -1242,7 +1262,7 @@ ipcMain.handle('force-return-withdrawal', async (event, { id, date, returnedQuan
   }
 });
 
-ipcMain.handle('reset-db', async () => {
+handleIpc('reset-db', async () => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
 
@@ -1274,7 +1294,7 @@ ipcMain.handle('reset-db', async () => {
   }
 });
 
-ipcMain.handle('seed-db', async () => {
+handleIpc('seed-db', async () => {
   await seedDatabase();
   return true;
 });
