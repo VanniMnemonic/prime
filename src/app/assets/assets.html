@@ -3,8 +3,8 @@
     #dt
     [stripedRows]="true"
     size="large"
-    [value]="assets"
-    [loading]="loading"
+    [value]="assets()"
+    [loading]="loading()"
     [globalFilterFields]="['denomination', 'part_number', 'barcode']"
     [tableStyle]="{ 'min-width': '50rem' }"
     dataKey="id"
@@ -234,7 +234,8 @@
 </div>
 
 <p-dialog
-  [(visible)]="formDrawerVisible"
+  [visible]="formDrawerVisible()"
+  (visibleChange)="formDrawerVisible.set($event)"
   [header]="getAssetDialogHeader()"
   [modal]="true"
   [dismissableMask]="true"
@@ -242,14 +243,15 @@
   [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
 >
   <ng-template pTemplate="content">
-    @if (formDrawerVisible) {
-      <app-asset-form [asset]="editingAsset" (onSave)="onFormSave()" (onCancel)="onFormCancel()" />
+    @if (formDrawerVisible()) {
+      <app-asset-form [asset]="editingAsset()" (onSave)="onFormSave()" (onCancel)="onFormCancel()" />
     }
   </ng-template>
 </p-dialog>
 
 <p-dialog
-  [(visible)]="withdrawFormDrawerVisible"
+  [visible]="withdrawFormDrawerVisible()"
+  (visibleChange)="withdrawFormDrawerVisible.set($event)"
   header="Add Withdrawal"
   [modal]="true"
   [dismissableMask]="true"
@@ -257,9 +259,9 @@
   [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
 >
   <ng-template pTemplate="content">
-    @if (withdrawFormDrawerVisible) {
+    @if (withdrawFormDrawerVisible()) {
       <app-withdrawal-form
-        [preselectedAsset]="selectedAssetForWithdrawal"
+        [preselectedAsset]="selectedAssetForWithdrawal()"
         (onSave)="onWithdrawFormSave($event)"
         (onCancel)="onWithdrawFormCancel()"
       />
@@ -268,7 +270,8 @@
 </p-dialog>
 
 <p-dialog
-  [(visible)]="batchFormDrawerVisible"
+  [visible]="batchFormDrawerVisible()"
+  (visibleChange)="batchFormDrawerVisible.set($event)"
   [header]="getBatchDialogHeader()"
   [modal]="true"
   [dismissableMask]="true"
@@ -276,12 +279,12 @@
   [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
 >
   <ng-template pTemplate="content">
-    @if (batchFormDrawerVisible) {
+    @if (batchFormDrawerVisible()) {
       <app-asset-batch-form
-        [asset]="selectedAsset"
-        [batch]="selectedBatch"
+        [asset]="selectedAsset()"
+        [batch]="selectedBatch()"
         (onSave)="onBatchFormSave()"
-        (onCancel)="batchFormDrawerVisible = false"
+        (onCancel)="batchFormDrawerVisible.set(false)"
       />
     }
   </ng-template>
