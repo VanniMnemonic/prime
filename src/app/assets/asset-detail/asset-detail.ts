@@ -22,6 +22,7 @@ import { WithdrawalService } from '../../services/withdrawal.service';
 import { DialogModule } from 'primeng/dialog';
 import { WithdrawalReturnForm } from '../../withdrawals/withdrawal-return-form/withdrawal-return-form';
 import { Router } from '@angular/router';
+import { EXPIRY_WARNING_DAYS } from '../../shared/constants';
 
 @Component({
   selector: 'app-asset-detail',
@@ -121,9 +122,9 @@ export class AssetDetail {
     const expiry = new Date(date);
     const now = new Date();
     if (expiry < now) return false;
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(now.getDate() + 30);
-    return expiry <= thirtyDaysFromNow;
+    const cutoff = new Date(now);
+    cutoff.setDate(now.getDate() + EXPIRY_WARNING_DAYS);
+    return expiry <= cutoff;
   }
 
   async loadBatches(assetId: number) {

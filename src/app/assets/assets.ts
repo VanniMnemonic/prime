@@ -16,6 +16,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
+import { EXPIRY_WARNING_DAYS } from '../shared/constants';
 import { AssetService } from '../services/asset.service';
 import { BatchService } from '../services/batch.service';
 import { WithdrawalService } from '../services/withdrawal.service';
@@ -133,9 +134,9 @@ export class Assets implements OnInit {
     // Consider expired items as not "near expiry" (they are already expired)
     if (expiry < now) return false;
 
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(now.getDate() + 30);
-    return expiry <= thirtyDaysFromNow;
+    const cutoff = new Date(now);
+    cutoff.setDate(now.getDate() + EXPIRY_WARNING_DAYS);
+    return expiry <= cutoff;
   }
 
   getQuantitySeverity(
