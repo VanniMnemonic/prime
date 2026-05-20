@@ -16,6 +16,7 @@ import { Withdrawal } from './entities/Withdrawal';
 import { BackupService } from './services/backup.service';
 import { NoteService } from './services/note.service';
 import { getDataPath } from './user-data';
+import { EXPIRY_WARNING_DAYS } from './constants';
 
 // Must be called before app.ready so the 'app' scheme is treated as a
 // standard secure origin.  Without this, <script type="module"> tags and
@@ -739,70 +740,86 @@ ipcMain.handle('upload-image', async (event, filePath: string) => {
   }
 });
 
+// Returns every asset with its aggregated batch totals, active-withdrawal
+// count, and the expired / near-expiry flags computed entirely in SQL. One
+// query, no per-asset JS loop over the batch array.
 ipcMain.handle('get-assets', async () => {
   const startedAt = Date.now();
-  const assetRepository = AppDataSource.getRepository(Asset);
-  const assets = await assetRepository.find();
-  const batchRepository = AppDataSource.getRepository(Batch);
-  const withdrawalRepository = AppDataSource.getRepository(Withdrawal);
-
-  const assetIds = assets.map((a) => a.id);
-  const batches = assetIds.length
-    ? await batchRepository.find({ where: { asset_id: In(assetIds) } })
-    : [];
-
-  const batchesByAssetId = new Map<number, Batch[]>();
-  for (const batch of batches) {
-    const list = batchesByAssetId.get(batch.asset_id) ?? [];
-    list.push(batch);
-    batchesByAssetId.set(batch.asset_id, list);
-  }
-
-  const withdrawnByAsset = await withdrawalRepository
-    .createQueryBuilder('w')
-    .innerJoin(Batch, 'b', 'b.id = w.batch_id')
-    .select('b.asset_id', 'asset_id')
-    .addSelect('SUM(w.quantity - w.returned_quantity)', 'withdrawn_quantity')
-    .where('w.must_return = :mustReturn', { mustReturn: true })
-    .andWhere('w.return_date IS NULL')
-    .groupBy('b.asset_id')
-    .getRawMany<{ asset_id: number; withdrawn_quantity: string | null }>();
-
-  const withdrawnMap = new Map<number, number>(
-    withdrawnByAsset.map((r) => [Number(r.asset_id), Number(r.withdrawn_quantity ?? 0)]),
-  );
 
   const now = new Date();
-  const thirtyDaysFromNow = new Date(now);
-  thirtyDaysFromNow.setDate(now.getDate() + 30);
+  const cutoff = new Date(now);
+  cutoff.setDate(now.getDate() + EXPIRY_WARNING_DAYS);
 
-  const assetsWithDetails = assets.map((asset) => {
-    const assetBatches = batchesByAssetId.get(asset.id) ?? [];
-    const totalQty = assetBatches.reduce((sum, batch) => sum + batch.quantity, 0);
-    const inefficientQty = assetBatches.reduce(
-      (sum, batch) => sum + (batch.inefficient_quantity ?? 0),
-      0,
-    );
+  // SQLite stores Date columns as ISO 8601 text; comparing as strings is
+  // chronologically correct in that format.
+  const nowIso = now.toISOString();
+  const cutoffIso = cutoff.toISOString();
 
-    const hasExpired = assetBatches.some(
-      (b) => b.expiration_date && new Date(b.expiration_date) < now,
-    );
-    const hasNearExpiry = assetBatches.some((b) => {
-      if (!b.expiration_date) return false;
-      const exp = new Date(b.expiration_date);
-      return exp > now && exp <= thirtyDaysFromNow;
-    });
+  type Row = {
+    id: number;
+    denomination: string;
+    part_number: string | null;
+    barcode: string | null;
+    min_stock: number;
+    image_path: string | null;
+    total_quantity: number | null;
+    inefficient_quantity: number | null;
+    withdrawn_quantity: number | null;
+    has_expired_batches: number;
+    has_near_expiry_batches: number;
+  };
 
-    return {
-      ...asset,
-      total_quantity: totalQty,
-      withdrawn_quantity: withdrawnMap.get(asset.id) ?? 0,
-      inefficient_quantity: inefficientQty,
-      is_below_min_stock: totalQty < asset.min_stock,
-      has_expired_batches: hasExpired,
-      has_near_expiry_batches: hasNearExpiry,
-    };
-  });
+  const rows = await AppDataSource.query<Row[]>(
+    `
+    SELECT
+      a.id              AS id,
+      a.denomination    AS denomination,
+      a.part_number     AS part_number,
+      a.barcode         AS barcode,
+      a.min_stock       AS min_stock,
+      a.image_path      AS image_path,
+      COALESCE(SUM(b.quantity), 0)              AS total_quantity,
+      COALESCE(SUM(b.inefficient_quantity), 0)  AS inefficient_quantity,
+      COALESCE(w.withdrawn_quantity, 0)         AS withdrawn_quantity,
+      MAX(CASE
+        WHEN b.expiration_date IS NOT NULL AND b.expiration_date < ?
+        THEN 1 ELSE 0
+      END) AS has_expired_batches,
+      MAX(CASE
+        WHEN b.expiration_date IS NOT NULL
+         AND b.expiration_date > ?
+         AND b.expiration_date <= ?
+        THEN 1 ELSE 0
+      END) AS has_near_expiry_batches
+    FROM asset a
+    LEFT JOIN batch b ON b.asset_id = a.id
+    LEFT JOIN (
+      SELECT b2.asset_id AS asset_id,
+             SUM(w2.quantity - w2.returned_quantity) AS withdrawn_quantity
+        FROM withdrawal w2
+        INNER JOIN batch b2 ON b2.id = w2.batch_id
+       WHERE w2.must_return = 1 AND w2.return_date IS NULL
+       GROUP BY b2.asset_id
+    ) w ON w.asset_id = a.id
+    GROUP BY a.id
+    `,
+    [nowIso, nowIso, cutoffIso],
+  );
+
+  const assetsWithDetails = rows.map((row) => ({
+    id: row.id,
+    denomination: row.denomination,
+    part_number: row.part_number,
+    barcode: row.barcode,
+    min_stock: row.min_stock,
+    image_path: row.image_path,
+    total_quantity: Number(row.total_quantity ?? 0),
+    inefficient_quantity: Number(row.inefficient_quantity ?? 0),
+    withdrawn_quantity: Number(row.withdrawn_quantity ?? 0),
+    is_below_min_stock: Number(row.total_quantity ?? 0) < row.min_stock,
+    has_expired_batches: !!row.has_expired_batches,
+    has_near_expiry_batches: !!row.has_near_expiry_batches,
+  }));
 
   const elapsedMs = Date.now() - startedAt;
   if (elapsedMs > 1500) console.warn(`[ipc] get-assets took ${elapsedMs}ms`);
